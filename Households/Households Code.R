@@ -62,10 +62,10 @@ str_subset(list.files(filepath),"Data") %>%
 house_raw_dat <- tibble()
 
 # Data directory
-data_filepath <- paste0(filepath, "Data ", ext_year)
+household_data_fp <- paste0(filepath, ext_year)
 
 #household file
-household_est_path <- paste0(data_filepath, "/household_estimates.xlsx")
+household_est_path <- paste0(household_data_fp, "/household_estimates.xlsx")
 
 # AS: Update Data Year (this is the maximum year available for both housing data sets from NRS)
 housing_sheets <- 
@@ -178,7 +178,7 @@ house_table <- house_dat1 %>%
 # https://www.nrscotland.gov.uk/statistics-and-data/statistics/statistics-by-theme/households/household-estimates/small-area-statistics-on-households-and-dwellings
 
 # Council tax file
-council_tax_path <- paste0(data_filepath, "/council_tax.xlsx")
+council_tax_path <- paste0(household_data_fp, "/council_tax.xlsx")
 
 # Latest year council tax - taken from latest year of housing data
 
