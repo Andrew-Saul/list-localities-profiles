@@ -13,7 +13,7 @@ rm(list = ls())
 Sys.umask("006")
 
 # Set file path
-lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+lp_path <- "/conf/LIST_analytics/West Dunbartonshire/Locality Profiles Combined/"
 
 # Source in functions code
 source("Master RMarkdown Document & Render Code/Global Script.R")
