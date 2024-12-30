@@ -26,17 +26,21 @@ library(grid)
 library(data.table)
 
 # Change year to be the year in the data folder name
-ext_year <- 2023
+#ext_year <- 2023
 
 ## Set Locality (for testing only)
 # LOCALITY <- "Falkirk West"
 
 ## Set file path
-lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+#lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
 
 # Source in functions code
 #source("Master RMarkdown Document & Render Code/Global Script.R")
 
+# Determine latest subdirectory containing data - Services
+ext_year <- 
+  str_subset(list.files(paste0(ip_path, "Services"), full.names = T), "DATA") %>% 
+  max()
 
 ### Geographical lookups and objects ----
 
@@ -71,14 +75,23 @@ postcode_lkp <- read_in_postcodes() %>%
 
 ## Read in all data in services folder
 
-services_file_names <- list.files(paste0(lp_path, "Services/DATA ", ext_year), pattern = "RDS")
+services_file_names <- list.files(ext_year, pattern = "RDS")
+
+# for (file in services_file_names) {
+#   name <- substr(x = file, 1, 4)
+# 
+#   data <- readRDS(paste0(ip_path, "Services/DATA ", ext_year, "/", file)) %>%
+#     clean_names()
+# 
+#   assign(name, data)
+# }
 
 for (file in services_file_names) {
   name <- substr(x = file, 1, 4)
-
-  data <- readRDS(paste0(lp_path, "Services/DATA ", ext_year, "/", file)) %>%
+  
+  data <- readRDS(paste0(ext_year, "/", file)) %>%
     clean_names()
-
+  
   assign(name, data)
 }
 
