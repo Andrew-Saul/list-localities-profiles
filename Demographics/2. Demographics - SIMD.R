@@ -27,7 +27,7 @@ library(phsstyles)
 library(leaflet)
 library(htmlwidgets)
 library(leaflet.extras)
-library(mapview)
+#library(mapview)
 library(sf)
 
 # Source in global functions/themes script
