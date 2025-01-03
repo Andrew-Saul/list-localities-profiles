@@ -34,10 +34,7 @@ library(sf)
 #source("./Master RMarkdown Document & Render Code/Global Script.R")
 
 ## File path
-filepath <- paste0(
-  "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/",
-  "RMarkdown/Locality Profiles/Demographics/"
-)
+filepath <- paste0(ip_path, "Demographics/")
 
 ## Final document will loop through a list of localities
 # Create placeholder for for loop
