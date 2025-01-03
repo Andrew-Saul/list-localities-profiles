@@ -38,7 +38,7 @@ library(reshape2)
 #ext_year <- 2023
 
 # Set Directory.
-filepath <- paste0("/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/Households/")
+filepath <- paste0(ip_path,"Households/")
 
 # AS: automatic detection of latest Data folder for NRS housing
 # Update Publication Year (the year marked on the Data folder)
@@ -65,14 +65,14 @@ house_raw_dat <- tibble()
 household_data_fp <- paste0(filepath, ext_year)
 
 #household file
-household_est_path <- paste0(household_data_fp, "/household_estimates.xlsx")
+household_est <- paste0(household_data_fp, "/household_estimates.xlsx")
 
 # AS: Update Data Year (this is the maximum year available for both housing data sets from NRS)
 housing_sheets <- 
-  str_subset(excel_sheets(household_est_path), "\\d{4}") 
+  str_subset(excel_sheets(household_est), "\\d{4}") 
 
 # get historic housing data, each year is on a seperate sheet so do a for loop
-  house_raw_dat <- map_df(housing_sheets, ~read_excel(household_est_path,
+  house_raw_dat <- map_df(housing_sheets, ~read_excel(household_est,
                                                       sheet = .x, skip = 3) %>%
                           mutate(year = .x)) %>% 
     clean_names() %>% 
@@ -178,11 +178,11 @@ house_table <- house_dat1 %>%
 # https://www.nrscotland.gov.uk/statistics-and-data/statistics/statistics-by-theme/households/household-estimates/small-area-statistics-on-households-and-dwellings
 
 # Council tax file
-council_tax_path <- paste0(household_data_fp, "/council_tax.xlsx")
+council_tax <- paste0(household_data_fp, "/council_tax.xlsx")
 
 # Latest year council tax - taken from latest year of housing data
 
-house_raw_dat2 <- read_excel(council_tax_path,
+house_raw_dat2 <- read_excel(council_tax,
   sheet = max(housing_sheets), skip = 4
 ) %>%
   clean_names()
