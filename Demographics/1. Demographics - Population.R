@@ -30,7 +30,9 @@ library(phsstyles)
 #source("./Master RMarkdown Document & Render Code/Global Script.R")
 
 ## File path
-filepath <- "./RMarkdown/Locality Profiles/Demographics/"
+filepath <- paste0(ip_path, "Demographics/")
+
+
 
 ## Final document will loop through a list of localities
 # Create placeholder for for loop
