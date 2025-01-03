@@ -33,14 +33,13 @@ library(data.table)
 
 ## Set file path
 #lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+filepath <- paste0(ip_path, "/Services")
 
 # Source in functions code
 #source("Master RMarkdown Document & Render Code/Global Script.R")
 
 # Determine latest subdirectory containing data - Services
-ext_year <- 
-  str_subset(list.files(paste0(ip_path, "Services"), full.names = T), "DATA") %>% 
-  max()
+ext_year_dir <- select_latest_year_dir()
 
 ### Geographical lookups and objects ----
 
@@ -75,7 +74,7 @@ postcode_lkp <- read_in_postcodes() %>%
 
 ## Read in all data in services folder
 
-services_file_names <- list.files(ext_year, pattern = "RDS")
+services_file_names <- list.files(ext_year_dir, pattern = "RDS")
 
 # for (file in services_file_names) {
 #   name <- substr(x = file, 1, 4)
