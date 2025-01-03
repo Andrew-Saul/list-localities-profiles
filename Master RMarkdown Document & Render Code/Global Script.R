@@ -247,7 +247,7 @@ read_in_pop_proj <- function() {
 # function to automatically select latest Data folder in directory ie. "data \\d{4}" 
 select_latest_year_dir <- function(fp = filepath) {
   
-  data_folder_names <- str_subset(list.files(filepath, full.names = T), regex("DATA", ignore_case = T)) 
+  data_folder_names <- str_subset(list.files(fp, full.names = T), regex("DATA", ignore_case = T)) 
   
   max_year <-  str_extract(data_folder_names, "\\b\\d{4}\\b") %>% 
     max()
