@@ -44,10 +44,7 @@ filepath <- paste0(ip_path,"General Health/")
 
 # AS: automatic detection of latest Data folder for NRS housing
 # Update Publication Year (the year marked on the Data folder)
-ext_year_dir <- 
-  str_subset(list.files(filepath, full.names = T),"DATA") %>% 
-  max()
-
+ext_year_dir <- select_latest_year_dir()
 
 # Source in functions code
 #source("Master RMarkdown Document & Render Code/Global Script.R")
