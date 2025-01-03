@@ -249,8 +249,8 @@ select_latest_year_dir <- function(fp = filepath) {
   
   data_folder_names <- str_subset(list.files(fp, full.names = T), regex("DATA", ignore_case = T)) 
   
-  max_year <-  str_extract(data_folder_names, "\\b\\d{4}\\b") %>% 
-    max()
+  max_year <-  str_extract(data_folder_names, "\\b\\d{4}\\b") 
+  max_year <- max_year[!is.na(max_year)]  %>% max()
   
   output <- str_subset(data_folder_names, max_year)
   
