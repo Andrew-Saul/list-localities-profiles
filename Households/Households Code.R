@@ -42,9 +42,7 @@ filepath <- paste0(ip_path,"Households/")
 
 # AS: automatic detection of latest Data folder for NRS housing
 # Update Publication Year (the year marked on the Data folder)
-ext_year <- 
-str_subset(list.files(filepath),"Data") %>% 
-  max()
+ext_year_dir <- select_latest_year_dir()
 
 
 # Read in Global Script for RMarkdown (For testing only)
@@ -59,13 +57,8 @@ str_subset(list.files(filepath),"Data") %>%
 
 ## 2a) Data imports & cleaning ----
 
-house_raw_dat <- tibble()
-
-# Data directory
-household_data_fp <- paste0(filepath, ext_year)
-
 #household file
-household_est <- paste0(household_data_fp, "/household_estimates.xlsx")
+household_est <- paste0(ext_year_dir, "/household_estimates.xlsx")
 
 # AS: Update Data Year (this is the maximum year available for both housing data sets from NRS)
 housing_sheets <- 
@@ -178,7 +171,7 @@ house_table <- house_dat1 %>%
 # https://www.nrscotland.gov.uk/statistics-and-data/statistics/statistics-by-theme/households/household-estimates/small-area-statistics-on-households-and-dwellings
 
 # Council tax file
-council_tax <- paste0(household_data_fp, "/council_tax.xlsx")
+council_tax <- paste0(ext_year_dir, "/council_tax.xlsx")
 
 # Latest year council tax - taken from latest year of housing data
 
