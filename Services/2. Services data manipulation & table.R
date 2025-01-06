@@ -88,7 +88,7 @@ services_file_names <- list.files(ext_year_dir, pattern = "RDS")
 for (file in services_file_names) {
   name <- substr(x = file, 1, 4)
   
-  data <- readRDS(paste0(ext_year, "/", file)) %>%
+  data <- readRDS(paste0(ext_year_dir, "/", file)) %>%
     clean_names()
   
   assign(name, data)
