@@ -6,17 +6,23 @@ library(tidyverse)
 library(knitr)
 library(markdown)
 library(rmarkdown)
+library(here)
 
 rm(list = ls())
+
+## Input (Read) Project file path
+ip_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+#lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+
+# Output (Write) Project file path
+op_path <- "/conf/LIST_analytics/West Dunbartonshire/Locality Profiles Combined/"
+
 
 # system unmask function so files have read-write permissions
 Sys.umask("006")
 
-# Set file path
-lp_path <- "/conf/LIST_analytics/West Dunbartonshire/Locality Profiles Combined/"
-
 # Source in functions code
-source("Master RMarkdown Document & Render Code/Global Script.R")
+source(here("Master RMarkdown Document & Render Code/Global Script.R"))
 
 ## Specify HSCP here
 ## NOTE - make sure that the formatting of the partnership's name matches the lookup
@@ -44,7 +50,7 @@ locality_list <- lookup |>
 
 # 1. HSCP Services Map
 
-map <- paste0(lp_path, "Master RMarkdown Document & Render Code/Output/maps/", HSCP, ".png")
+map <- paste0(ip_path, "Master RMarkdown Document & Render Code/Output/maps/", HSCP, ".png")
 
 stopifnot(file.exists(map)) # Error if the file path doesn't exist.
 
@@ -79,14 +85,14 @@ for (LOCALITY in locality_list) {
 
   ## 2b) Create the main body of the profiles
 
-  rmarkdown::render("./Master RMarkdown Document & Render Code/Locality_Profiles_Master_Markdown.Rmd",
+  rmarkdown::render(paste0(op_path, "Master RMarkdown Document & Render Code/Locality_Profiles_Master_Markdown.Rmd"),
     output_file = paste0(LOCALITY, " - Locality Profile.docx"),
-    output_dir = paste0(lp_path, "Master RMarkdown Document & Render Code/Output/")
+    output_dir = paste0(op_path, "Master RMarkdown Document & Render Code/Output/")
   )
 
   ## 2c) Create the summary tables
-  rmarkdown::render("Summary Table/Summary-Table-Markdown.Rmd",
+  rmarkdown::render(paste0(op_path, "Summary Table/Summary-Table-Markdown.Rmd"),
     output_file = paste0(LOCALITY, " - Summary Table.docx"),
-    output_dir = paste0(lp_path, "Master RMarkdown Document & Render Code/Output/Summary Tables/")
+    output_dir = paste0(op_path, "Master RMarkdown Document & Render Code/Output/Summary Tables/")
   )
 }
