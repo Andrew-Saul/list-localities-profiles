@@ -26,7 +26,7 @@ source(here("Master RMarkdown Document & Render Code/Global Script.R"))
 
 ## Specify HSCP here
 ## NOTE - make sure that the formatting of the partnership's name matches the lookup
-HSCP <- "Fife"
+HSCP <- "West Dunbartonshire"
 
 # Below creates locality list of all the localities in a chosen HSCP
 lookup <- read_in_localities()
@@ -59,26 +59,25 @@ for (LOCALITY in locality_list) {
   ## 2a) Source in all the scripts for a given LOCALITY
 
   # demographics
-  source("Demographics/1. Demographics - Population.R")
-  source("./Demographics/2. Demographics - SIMD.R")
+  source(here("Demographics/1. Demographics - Population.R"))
+  source(here("Demographics/2. Demographics - SIMD.R"))
 
   # housing
-  source("./Households/Households Code.R")
+  source(here("Households/Households Code.R"))
 
   # services
-  source("./Services/2. Services data manipulation & table.R")
+  source(here("Services/2. Services data manipulation & table.R"))
 
   # general health
-  source("./General Health/3. General Health Outputs.R")
+  source(here("General Health/3. General Health Outputs.R"))
 
   # lifestyle & risk factors
-  source("./Lifestyle & Risk Factors/2. Lifestyle & Risk Factors Outputs.R")
-
+  source(here("Lifestyle & Risk Factors/2. Lifestyle & Risk Factors Outputs.R"))
   # unscheduled care
-  source("./Unscheduled Care/2. Unscheduled Care outputs.R")
+  source(here("Unscheduled Care/2. Unscheduled Care outputs.R"))
 
   # appendices
-  source("./Master RMarkdown Document & Render Code/Tables for Appendix.R")
+  source(here("Master RMarkdown Document & Render Code/Tables for Appendix.R"))
 
   # Remove tidylog package which messes up outputs
   detach(package:tidylog, unload = TRUE)
