@@ -334,26 +334,30 @@ EAs_loc_ts <- area_trend_usc(
 
 # Objects for text and summary table
 latest_emergency_adm_loc <- emergency_adm_areas %>%
-  filter(
-    location == LOCALITY,
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = LOCALITY) %>% 
+  # drop_na() %>%  # remove FYs without data
+  # filter(
+  #   location == LOCALITY,
+  #   year == max(financial_year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
 hscp_emergency_adm <- emergency_adm_areas %>%
-  filter(
-    location == HSCP,
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = HSCP) %>% 
+  # filter(
+  #   location == HSCP,
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
 scot_emergency_adm <- emergency_adm_areas %>%
-  filter(
-    location == "Scotland",
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc =  "Scotland") %>% 
+  # filter(
+  #   location == "Scotland",
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
@@ -412,26 +416,29 @@ BDs_loc_ts <- area_trend_usc(
 
 # Objects for text and summary table
 latest_bed_days_loc <- bed_days_areas %>%
-  filter(
-    location == LOCALITY,
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = LOCALITY) %>% 
+  # filter(
+  #   location == LOCALITY,
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
 hscp_bed_days <- bed_days_areas %>%
-  filter(
-    location == HSCP,
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = HSCP) %>% 
+  # filter(
+  #   location == HSCP,
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
 scot_bed_days <- bed_days_areas %>%
-  filter(
-    location == "Scotland",
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = "Scotland") %>% 
+  # filter(
+  #   location == "Scotland",
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
@@ -489,28 +496,31 @@ BDMH_loc_ts <- area_trend_usc(
 
 # Objects for text and summary table
 latest_bed_days_mh_loc <- bed_days_mh_areas %>%
-  filter(
-    location == LOCALITY,
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = LOCALITY) %>% 
+  # filter(
+  #   location == LOCALITY,
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
 latest_bed_days_mh_loc <- ifelse(is_empty(latest_bed_days_mh_loc), "NA", latest_bed_days_mh_loc)
 
 hscp_bed_days_mh <- bed_days_mh_areas %>%
-  filter(
-    location == HSCP,
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = HSCP) %>% 
+  # filter(
+  #   location == HSCP,
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
 scot_bed_days_mh <- bed_days_mh_areas %>%
-  filter(
-    location == "Scotland",
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = "Scotland") %>% 
+  # filter(
+  #   location == "Scotland",
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
@@ -569,26 +579,29 @@ AandE_loc_ts <- area_trend_usc(
 
 # Objects for text and summary table
 latest_ae_att_loc <- ae_att_areas %>%
-  filter(
-    location == LOCALITY,
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = LOCALITY) %>% 
+  # filter(
+  #   location == LOCALITY,
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
 hscp_ae_att <- ae_att_areas %>%
-  filter(
-    location == HSCP,
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = HSCP) %>% 
+  # filter(
+  #   location == HSCP,
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
 scot_ae_att <- ae_att_areas %>%
-  filter(
-    location == "Scotland",
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = "Scotland") %>% 
+  # filter(
+  #   location == "Scotland",
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
@@ -638,26 +651,29 @@ DD_loc_ts <- area_trend_usc(
 
 # Objects for text and summary table
 latest_dd_loc <- delayed_disch_areas %>%
-  filter(
-    location == LOCALITY,
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = LOCALITY) %>% 
+  # filter(
+  #   location == LOCALITY,
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
 hscp_dd <- delayed_disch_areas %>%
-  filter(
-    location == HSCP,
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = HSCP) %>% 
+  # filter(
+  #   location == HSCP,
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
 scot_dd <- delayed_disch_areas %>%
-  filter(
-    location == "Scotland",
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = "Scotland") %>% 
+  # filter(
+  #   location == "Scotland",
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
@@ -701,18 +717,20 @@ Falls_loc_ts <- area_trend_usc(
 
 # Objects for text and summary table
 latest_falls_loc <- falls_areas %>%
-  filter(
-    location == LOCALITY,
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = LOCALITY) %>% 
+  # filter(
+  #   location == LOCALITY,
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
 scot_falls <- falls_areas %>%
-  filter(
-    location == "Scotland",
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = "Scotland") %>% 
+  # filter(
+  #   location == "Scotland",
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
@@ -774,17 +792,19 @@ Read_loc_ts <- area_trend_usc(
 
 # Objects for text and summary table
 latest_read_loc <- readmissions_areas %>%
-  filter(
-    location == LOCALITY,
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = LOCALITY) %>% 
+  # filter(
+  #   location == LOCALITY,
+  #   year == max(year)
+  # ) %>%
   pull(data)
 
 scot_read <- readmissions_areas %>%
-  filter(
-    location == "Scotland",
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = "Scotland") %>% 
+  # filter(
+  #   location == "Scotland",
+  #   year == max(year)
+  # ) %>%
   pull(data)
 
 
@@ -899,10 +919,11 @@ ppa_65plus <- ppa %>%
   mutate(data = round_half_up(plus65tot / n * 100, 1))
 
 latest_ppa_65plus <- ppa_65plus %>%
-  filter(
-    location == LOCALITY,
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = LOCALITY) %>% 
+  # filter(
+  #   location == LOCALITY,
+  #   year == max(year)
+  # ) %>%
   pull(data)
 
 ppa_under65 <- ppa %>%
@@ -915,10 +936,11 @@ ppa_under65 <- ppa %>%
   mutate(data = round_half_up(under65tot / n * 100, 1))
 
 latest_ppa_under65 <- ppa_under65 %>%
-  filter(
-    location == LOCALITY,
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = LOCALITY) %>% 
+  # filter(
+  #   location == LOCALITY,
+  #   year == max(year)
+  # ) %>%
   pull(data)
 
 
@@ -942,26 +964,29 @@ PPA_loc_ts <- area_trend_usc(
 
 # Objects for text and summary table
 latest_ppa_loc <- ppa_areas %>%
-  filter(
-    location == LOCALITY,
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = LOCALITY) %>% 
+  # filter(
+  #   location == LOCALITY,
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
 hscp_ppa <- ppa_areas %>%
-  filter(
-    location == HSCP,
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = HSCP) %>% 
+  # filter(
+  #   location == HSCP,
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
 scot_ppa <- ppa_areas %>%
-  filter(
-    location == "Scotland",
-    year == max(year)
-  ) %>%
+  extract_latest_fy(loc = "Scotland") %>% 
+  # filter(
+  #   location == "Scotland",
+  #   year == max(year)
+  # ) %>%
   mutate(data = format(data, big.mark = ",")) %>%
   pull(data)
 
