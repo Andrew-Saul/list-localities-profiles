@@ -6,21 +6,27 @@ library(tidyverse)
 library(knitr)
 library(markdown)
 library(rmarkdown)
+library(here)
 
 rm(list = ls())
+
+## Input (Read) Project file path
+ip_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+#lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+
+# Output (Write) Project file path
+op_path <- "/conf/LIST_analytics/West Dunbartonshire/Locality Profiles Combined/"
+
 
 # system unmask function so files have read-write permissions
 Sys.umask("006")
 
-# Set file path
-lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
-
 # Source in functions code
-source("Master RMarkdown Document & Render Code/Global Script.R")
+source(here("Master RMarkdown Document & Render Code/Global Script.R"))
 
 ## Specify HSCP here
 ## NOTE - make sure that the formatting of the partnership's name matches the lookup
-HSCP <- "Fife"
+HSCP <- "West Dunbartonshire"
 
 # Below creates locality list of all the localities in a chosen HSCP
 lookup <- read_in_localities()
@@ -44,7 +50,7 @@ locality_list <- lookup |>
 
 # 1. HSCP Services Map
 
-map <- paste0(lp_path, "Master RMarkdown Document & Render Code/Output/maps/", HSCP, ".png")
+map <- paste0(ip_path, "Master RMarkdown Document & Render Code/Output/maps/", HSCP, ".png")
 
 stopifnot(file.exists(map)) # Error if the file path doesn't exist.
 
@@ -53,40 +59,39 @@ for (LOCALITY in locality_list) {
   ## 2a) Source in all the scripts for a given LOCALITY
 
   # demographics
-  source("Demographics/1. Demographics - Population.R")
-  source("./Demographics/2. Demographics - SIMD.R")
+  source(here("Demographics/1. Demographics - Population.R"))
+  source(here("Demographics/2. Demographics - SIMD.R"))
 
   # housing
-  source("./Households/Households Code.R")
+  source(here("Households/Households Code.R"))
 
   # services
-  source("./Services/2. Services data manipulation & table.R")
+  source(here("Services/2. Services data manipulation & table.R"))
 
   # general health
-  source("./General Health/3. General Health Outputs.R")
+  source(here("General Health/3. General Health Outputs.R"))
 
   # lifestyle & risk factors
-  source("./Lifestyle & Risk Factors/2. Lifestyle & Risk Factors Outputs.R")
-
+  source(here("Lifestyle & Risk Factors/2. Lifestyle & Risk Factors Outputs.R"))
   # unscheduled care
-  source("./Unscheduled Care/2. Unscheduled Care outputs.R")
+  source(here("Unscheduled Care/2. Unscheduled Care outputs.R"))
 
   # appendices
-  source("./Master RMarkdown Document & Render Code/Tables for Appendix.R")
+  source(here("Master RMarkdown Document & Render Code/Tables for Appendix.R"))
 
   # Remove tidylog package which messes up outputs
   detach(package:tidylog, unload = TRUE)
 
   ## 2b) Create the main body of the profiles
 
-  rmarkdown::render("./Master RMarkdown Document & Render Code/Locality_Profiles_Master_Markdown.Rmd",
+  rmarkdown::render(paste0(op_path, "Master RMarkdown Document & Render Code/Locality_Profiles_Master_Markdown.Rmd"),
     output_file = paste0(LOCALITY, " - Locality Profile.docx"),
-    output_dir = paste0(lp_path, "Master RMarkdown Document & Render Code/Output/")
+    output_dir = paste0(op_path, "Master RMarkdown Document & Render Code/Output/")
   )
 
   ## 2c) Create the summary tables
-  rmarkdown::render("Summary Table/Summary-Table-Markdown.Rmd",
+  rmarkdown::render(paste0(op_path, "Summary Table/Summary-Table-Markdown.Rmd"),
     output_file = paste0(LOCALITY, " - Summary Table.docx"),
-    output_dir = paste0(lp_path, "Master RMarkdown Document & Render Code/Output/Summary Tables/")
+    output_dir = paste0(op_path, "Master RMarkdown Document & Render Code/Output/Summary Tables/")
   )
 }

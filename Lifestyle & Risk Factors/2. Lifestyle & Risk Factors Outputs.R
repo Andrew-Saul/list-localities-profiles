@@ -34,11 +34,17 @@ library(phsstyles)
 # LOCALITY <- "Barra"
 
 # Set year of data extracts for folder
-ext_year <- 2023
+#ext_year <- 2023
 
 # Set file path
-lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+#lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+# Set Directory.
+filepath <- paste0(ip_path,"Lifestyle & Risk Factors/")
 
+# AS: automatic detection of latest Data folder
+
+ext_year_dir <- select_latest_year_dir()
+               
 # Source in functions code
 #source("Master RMarkdown Document & Render Code/Global Script.R")
 
@@ -69,7 +75,7 @@ n_loc <- lookup %>%
 ### Import + clean datasets ----
 
 ## Drug-related hospital admissions
-drug_hosp <- readRDS(paste0(lp_path, "Lifestyle & Risk Factors/Data ", ext_year, "/scotpho_data_extract_drug_hosp.RDS")) %>%
+drug_hosp <- readRDS(paste0(ext_year_dir, "/scotpho_data_extract_drug_hosp.RDS")) %>%
   clean_scotpho_dat() %>%
   mutate(period_short = gsub("to", "-", substr(period, 1, 18)))
 
@@ -77,7 +83,7 @@ check_missing_data_scotpho(drug_hosp)
 
 
 # Alcohol-related hospital admissions
-alcohol_hosp <- readRDS(paste0(lp_path, "Lifestyle & Risk Factors/Data ", ext_year, "/scotpho_data_extract_alcohol_hosp.RDS")) %>%
+alcohol_hosp <- readRDS(paste0(ext_year_dir, "/scotpho_data_extract_alcohol_hosp.RDS")) %>%
   clean_scotpho_dat() %>%
   mutate(period_short = substr(period, 1, 7))
 
@@ -85,14 +91,14 @@ check_missing_data_scotpho(alcohol_hosp)
 
 
 ## Alcohol-specific deaths
-alcohol_deaths <- readRDS(paste0(lp_path, "Lifestyle & Risk Factors/Data ", ext_year, "/scotpho_data_extract_alcohol_deaths.RDS")) %>%
+alcohol_deaths <- readRDS(paste0(ext_year_dir, "/scotpho_data_extract_alcohol_deaths.RDS")) %>%
   clean_scotpho_dat() %>%
   mutate(period_short = gsub("to", "-", substr(period, 1, 12)))
 
 check_missing_data_scotpho(alcohol_deaths)
 
 ## Bowel screening uptake
-bowel_screening <- readRDS(paste0(lp_path, "Lifestyle & Risk Factors/Data ", ext_year, "/scotpho_data_extract_bowel_screening.RDS")) %>%
+bowel_screening <- readRDS(paste0(ext_year_dir, "/scotpho_data_extract_bowel_screening.RDS")) %>%
   clean_scotpho_dat() %>%
   mutate(period_short = gsub("to", "-", substr(period, 1, 12)))
 

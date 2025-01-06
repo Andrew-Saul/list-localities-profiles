@@ -12,17 +12,22 @@ library(kableExtra)
 library(dplyr)
 
 # Set year of data extracts for folder
-ext_year <- 2023
+#ext_year <- 2023
 
 # Set file path
-lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+#lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+filepath <- paste0(ip_path, "Project Info & Indicators")
+
+ext_year <- list.files(filepath, "Indicator Tracker") %>% 
+  str_subset(".xlsx$") %>% 
+  str_extract("\\b\\d{4}\\b") 
 
 # testing locality
 # LOCALITY <- "Forres"
 
 ## Indicator Definitions ----
 
-indicator_defs <- read_excel(paste0(lp_path, "Project Info & Indicators/Indicator Tracker ", ext_year, ".xlsx"),
+indicator_defs <- read_excel(paste0(filepath, "/Indicator Tracker ", ext_year, ".xlsx"),
   sheet = "Definitions"
 )
 indicator_defs$format <- "**"
@@ -34,7 +39,7 @@ indicator_defs <- dplyr::select(indicator_defs, -format)
 
 ## Data extraction dates ----
 
-dates_extract <- read_excel(paste0(lp_path, "Project Info & Indicators/Indicator Tracker ", ext_year, ".xlsx"),
+dates_extract <- read_excel(paste0(filepath, "/Indicator Tracker ", ext_year, ".xlsx"),
   sheet = "Overview",
   skip = 2
 ) %>%
@@ -52,6 +57,6 @@ dates_extract <- dplyr::select(dates_extract, -format)
 
 ## PPA conditions included ----
 
-ppa_def <- read_excel(paste0(lp_path, "Project Info & Indicators/Indicator Tracker ", ext_year, ".xlsx"),
+ppa_def <- read_excel(paste0(filepath, "/Indicator Tracker ", ext_year, ".xlsx"),
   sheet = "PPA"
 )

@@ -110,6 +110,8 @@ theme_profiles <- function() {
   )
 }
 
+
+
 #### Lookup ####
 
 ## Import the latest locality lookup from cl-out ----
@@ -242,6 +244,23 @@ read_in_pop_proj <- function() {
   left_join(proj, hscp_lkp)
 }
 
+# function to automatically select latest Data folder in directory ie. "data \\d{4}" 
+select_latest_year_dir <- function(fp = filepath) {
+  
+  data_folder_names <- str_subset(list.files(fp, full.names = T), regex("DATA", ignore_case = T)) 
+  
+  max_year <-  str_extract(data_folder_names, "\\b\\d{4}\\b") 
+  max_year <- max_year[!is.na(max_year)]  %>% max()
+  
+  output <- str_subset(data_folder_names, max_year)
+  
+  if(length(output) != 1){
+    stop("More than one folder has been selected. Please correct before continuing")
+  } 
+  
+  return(output)
+  
+}
 #### Functions for ScotPHO data ####
 
 ## ScotPHO data cleaning function ----
