@@ -263,40 +263,7 @@ select_latest_year_dir <- function(fp = filepath) {
   
 }
 
-# function to detect latest year in unscheduled data
-######################################################
-extract_latest_fy <- function(df, loc){
-  # continue only if financial year is in tibble. Stop and correct otherwise
-  if(!c("financial_year" %in% colnames(df))){
-    stop("financial year is not present in tibble : ", deparse(substitute(df)), 
-         ".  Please correct")
-  }
-  
-  #check that FY entries are in format yyyy/yy. output logical vector
-  fy_data <- df %>% 
-    drop_na() %>%  #only include years that contain data
-    select(financial_year) %>% 
-    distinct() %>% 
-    pull()
-  
-  fy_all_true <- fy_data %>% 
-    str_detect(., "\\d{4}/\\d{2}")
-  
-  # exit programme if not all entries are in format. 
-  if(length(fy_all_true) != sum(fy_all_true)){
-    message("Not all Financial Years are in the format yyyy/yy. Please correct")
-  }
-  
-  # first four digits of latest FY 
-  max_year <- 
-    fy_data %>% 
-    str_extract("^\\d{4}") %>% max()
-  
-  # rows that contain the latest FY
-  df %>% 
-    filter(str_detect(financial_year, max_year),
-           location == loc)
-}
+
 #### Functions for ScotPHO data ####
 
 ## ScotPHO data cleaning function ----
