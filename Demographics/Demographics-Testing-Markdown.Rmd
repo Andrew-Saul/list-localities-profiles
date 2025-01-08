@@ -20,7 +20,7 @@ options(kableExtra.auto_format = FALSE)
 # LOCALITY <- "Ayr North and Former Coalfield Communities"
 # LOCALITY <- "Helensburgh and Lomond"
 # LOCALITY <- "City of Dunfermline"
-LOCALITY <- "Inverness"
+#LOCALITY <- "Inverness"
 
 source("/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/Demographics/Scripts/1. Demographics - Population.R")
 source("/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/Demographics/Scripts/2. Demographics - SIMD.R")
@@ -51,11 +51,13 @@ In `r pop_max_year`, the total population of `r LOCALITY` locality was `r total_
 
 \newline
 
-```{r echo = FALSE, fig.width = 6, fig.height = 3, warning = FALSE}
-pop_pyramid
+```{r echo = FALSE, fig.width = 7, fig.height = 3.5, out.width="50%" , warning = FALSE, fig.show='hold'}
+pop_pyramid[1] 
+pop_pyramid[2]
 
 x <- x + 1
 ```
+
 
 <!-- Population over time -->
 
@@ -80,8 +82,9 @@ Figure `r x` shows how population structure has changed between `r pop_min_year`
 ####Figure `r x`: Change in population structure over the last five years.
 \newline
 
-```{r echo = FALSE, fig.width = 7, fig.height = 3.5, warning = FALSE}
-hist_pop_change
+```{r echo = FALSE, fig.width = 7, fig.height = 3.5, out.width="50%" , warning = FALSE, fig.show='hold'}
+hist_pop_change[[1]]
+hist_pop_change[[2]]
 
 x <- x + 1
 ```

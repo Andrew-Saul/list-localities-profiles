@@ -97,9 +97,16 @@ rm(simd_2020_all, simd_2020_dom, simd_2016_all, simd_2016_dom)
 ## 5a) SIMD summary ----
 
 # calculate the percent of the population within each deprivation quintile
-simd_perc_breakdown <- pop_data %>%
+simd_perc_breakdown <- list()
+perc_bottom_quintile <- list()
+perc_top_quintile <- list()
+
+
+for(loc in locality_list){
+
+simd_perc_breakdown[[loc]] <- pop_data %>%
   mutate(simd2020v2_sc_quintile = as.factor(simd2020v2_sc_quintile)) %>%
-  filter(hscp_locality == LOCALITY) %>%
+  filter(hscp_locality == loc) %>%
   group_by(simd2020v2_sc_quintile, .drop = FALSE) %>%
   dplyr::summarise(pop = sum(total_pop)) %>%
   mutate(
@@ -109,10 +116,10 @@ simd_perc_breakdown <- pop_data %>%
   mutate(perc = replace_na(perc, 0)) %>%
   arrange(simd2020v2_sc_quintile)
 
-perc_bottom_quintile <- simd_perc_breakdown[1, ]$perc
-perc_top_quintile <- simd_perc_breakdown[5, ]$perc
+perc_bottom_quintile[[loc]] <- simd_perc_breakdown[[loc]][1, ]$perc
+perc_top_quintile[[loc]] <- simd_perc_breakdown[[loc]][5, ]$perc
 
-
+}
 
 ## 5b) SIMD map ----
 
@@ -201,13 +208,17 @@ perc_top_quintile <- simd_perc_breakdown[5, ]$perc
 #rm(zones, places, simd_map_data)
 
 # load in shapefile for mapping
-zones<-read_sf(dsn = "//conf/linkage/output/lookups/Unicode/Geography/Shapefiles/Data Zones 2011/SG_DataZone_Bdry_2011.shp") %>% st_transform(4326) %>% rename(datazone2011 = datazone20)
+zone_data_sf<-read_sf(dsn = "//conf/linkage/output/lookups/Unicode/Geography/Shapefiles/Data Zones 2011/SG_DataZone_Bdry_2011.shp") %>% st_transform(4326) %>% rename(datazone2011 = datazone20)
 
 # merge lookup and shapefile
-zones <- merge(zones, lookup_dz, by = "datazone2011")
+zone_data_sf <- merge(zone_data_sf, lookup_dz)
 
+# create list object to store the 2 locality maps
+simd_map <- list()
+
+for (loc in locality_list){
 # subset for Locality
-zones <- subset(zones, hscp_locality == LOCALITY)
+zones <- subset(zone_data_sf, hscp_locality == loc)
 
 #Get latitude and longitdue co-ordinates for each datazone, find min and max.
 zones_coord <-
@@ -245,7 +256,7 @@ places <- read_csv(paste0("/conf/linkage/output/lookups/Unicode/Geography/",
 
 # load in 2020 deprivation data
 simd_map_data <- simd2020 %>%
-  filter(hscp_locality == LOCALITY) %>%
+  filter(hscp_locality == loc) %>%
   dplyr::select(datazone2011, simd)
 
 # merge with shapefile
@@ -265,7 +276,7 @@ simd_cats <- c("SIMD 1",
                "SIMD 5")
 
 # plot
-simd_map <- ggplot() +
+simd_map[[loc]] <- ggplot() +
   geom_sf(data = zones,
           aes(fill = factor(simd, levels = 1:5)), colour = "black") +
   scale_fill_manual(values = simd_col, labels = simd_cats, drop = FALSE) +
@@ -280,6 +291,7 @@ simd_map <- ggplot() +
   guides(fill=guide_legend(title="SIMD Quintile")) +
   labs(caption = "Source: Scottish Government, Public Health Scotland")
 
+}
 
 rm(zones, places, simd_map_data)
 
@@ -292,9 +304,16 @@ plot_labels <- c(
 )
 
 # SIMD topic breakdown
+simd_domains <- list()
+simd2020_dom <- list()
+simd2016_dom <- list()
+simd_16_20_dom <- list()
+simd_diff_overall <- list()
 
-simd_domains <- simd2020 %>%
-  filter(hscp_locality == LOCALITY) %>%
+for(loc in locality_list){
+  
+simd_domains[[loc]] <- simd2020 %>%
+  filter(hscp_locality == loc) %>%
   select(income, employment, education, access, crime, health, housing, total_pop) %>%
   reshape2::melt(id.vars = "total_pop") %>%
   group_by(variable, value) %>%
@@ -308,7 +327,7 @@ simd_domains <- simd2020 %>%
   scale_y_continuous(labels = scales::percent) +
   labs(
     x = "", y = "Proportion of Population",
-    title = paste0("Breakdown of the SIMD Domains in ", str_wrap(LOCALITY, 50)),
+    title = paste0("Breakdown of the SIMD Domains in ", str_wrap(loc, 50)),
     caption = "Source: Scottish Government, Public Health Scotland, National Records Scotland"
   ) +
   scale_fill_manual(
@@ -318,22 +337,23 @@ simd_domains <- simd2020 %>%
   ) +
   theme_profiles()
 
-
 ## 5d) SIMD 2016 vs 2020 ----
 
 # Deprivation Data 2020
-simd2020_dom <- simd2020 %>%
-  filter(hscp_locality == LOCALITY) %>%
+simd2020_dom[[loc]] <- simd2020 %>%
+  filter(hscp_locality == loc) %>%
   select(datazone2011, simd, income, employment, education, access, crime, health, housing)
 
-names(simd2020_dom)[2:9] <- paste0(names(simd2020_dom)[2:9], "_20")
+names(simd2020_dom[[loc]])[2:9] <- paste0(names(simd2020_dom[[loc]])[2:9], "_20")
 
 # Deprivation Data 2016
-simd2016_dom <- simd2016 %>%
-  filter(hscp_locality == LOCALITY) %>%
+simd2016_dom[[loc]] <- simd2016 %>%
+  filter(hscp_locality == loc) %>%
   select(datazone2011, simd, income, employment, education, access, crime, health, housing)
 
-names(simd2016_dom)[2:9] <- paste0(names(simd2016_dom)[2:9], "_16")
+names(simd2016_dom[[loc]])[2:9] <- paste0(names(simd2016_dom[[loc]])[2:9], "_16")
+
+}
 
 # Get most up to date datazone populations
 
@@ -347,8 +367,10 @@ pop_16_20 <- pop_raw_data %>%
   select(-year) %>%
   spread(simd_rank_year, pop)
 
+for(loc in locality_list){
+
 ## Data wrangling
-simd2016_dom <- simd2016_dom %>%
+simd2016_dom[[loc]] <- simd2016_dom[[loc]] %>%
   left_join(pop_16_20) %>%
   select(datazone2011, contains("_16")) %>%
   reshape2::melt(id.vars = c("datazone2011", "pop_16")) %>%
@@ -366,7 +388,7 @@ simd2016_dom <- simd2016_dom %>%
   dplyr::ungroup() %>%
   dplyr::select(domain, perc_16, quintile = value)
 
-simd2020_dom <- simd2020_dom %>%
+simd2020_dom[[loc]] <- simd2020_dom[[loc]] %>%
   left_join(pop_16_20) %>%
   select(datazone2011, contains("_20")) %>%
   reshape2::melt(id.vars = c("datazone2011", "pop_20")) %>%
@@ -384,7 +406,7 @@ simd2020_dom <- simd2020_dom %>%
   dplyr::ungroup() %>%
   dplyr::select(domain, perc_20, quintile = value)
 
-domains <- simd2020_dom$domain %>% unique()
+domains <- simd2020_dom[[loc]]$domain %>% unique()
 base_data <- tibble(
   domain = rep(domains, each = 5),
   quintile = rep(1:5, 8)
@@ -392,9 +414,9 @@ base_data <- tibble(
 
 ## Outputs
 
-simd_16_20_dom <- full_join(base_data, simd2016_dom) %>%
+simd_16_20_dom[[loc]] <- full_join(base_data, simd2016_dom[[loc]]) %>%
   mutate(perc_16 = replace_na(perc_16, 0)) %>%
-  full_join(simd2020_dom) %>%
+  full_join(simd2020_dom[[loc]]) %>%
   mutate(perc_20 = replace_na(perc_20, 0)) %>%
   mutate(diff = perc_20 - perc_16) %>%
   mutate(
@@ -402,8 +424,8 @@ simd_16_20_dom <- full_join(base_data, simd2016_dom) %>%
     v_just = ifelse(diff < 0, 1.5, -1)
   )
 
-simd_diff_plot <- ggplot(simd_16_20_dom, aes(x = quintile, y = diff, fill = factor(quintile))) +
-  facet_wrap(~ factor(domain, levels = c("SIMD", unique(sort(simd_16_20_dom$domain))[1:7])), ncol = 4) +
+simd_diff_plot <- ggplot(simd_16_20_dom[[loc]], aes(x = quintile, y = diff, fill = factor(quintile))) +
+  facet_wrap(~ factor(domain, levels = c("SIMD", unique(sort(simd_16_20_dom[[loc]]$domain))[1:7])), ncol = 4) +
   geom_line(aes(y = 0, group = 1)) +
   geom_col(
     position = position_dodge(),
@@ -419,7 +441,7 @@ simd_diff_plot <- ggplot(simd_16_20_dom, aes(x = quintile, y = diff, fill = fact
   ) +
   scale_y_continuous(
     labels = scales::percent,
-    limits = c(-1.4 * max(abs(simd_16_20_dom$diff)), 1.4 * max(abs(simd_16_20_dom$diff)))
+    limits = c(-1.4 * max(abs(simd_16_20_dom[[loc]]$diff)), 1.4 * max(abs(simd_16_20_dom[[loc]]$diff)))
   ) +
   scale_fill_manual(
     name = "Population-Weighted Quintile",
@@ -432,13 +454,13 @@ simd_diff_plot <- ggplot(simd_16_20_dom, aes(x = quintile, y = diff, fill = fact
     x = "", y = "Difference from 2016",
     title = paste0(
       "Difference in Population Living in Deprivation Quintiles by SIMD Domain\n",
-      "in 2016 and ", pop_max_year, " in ", str_wrap(LOCALITY, 50)
+      "in 2016 and ", pop_max_year, " in ", str_wrap(loc, 50)
     ),
     caption = "Source: Scottish Government, National Records Scotland"
   ) +
   guides(fill = guide_legend(title.position = "top"))
 
-simd_diff_overall <- simd_16_20_dom %>%
+simd_diff_overall[[loc]] <- simd_16_20_dom[[loc]] %>%
   filter(domain == "SIMD") %>%
   mutate(
     Quintile = paste(domain, quintile),
@@ -448,7 +470,7 @@ simd_diff_overall <- simd_16_20_dom %>%
   ) %>%
   select(Quintile, perc_16, perc_20, Difference)
 
-
+}
 ##################### SECTION 4: Objects for summary table #######################
 
 ## Relevant lookups for creating the table objects
