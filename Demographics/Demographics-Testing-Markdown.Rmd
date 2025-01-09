@@ -23,7 +23,7 @@ options(kableExtra.auto_format = FALSE)
 #LOCALITY <- "Inverness"
 
 source("/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/Demographics/Scripts/1. Demographics - Population.R")
-source("/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/Demographics/Scripts/2. Demographics - SIMD.R")
+#source("/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/Demographics/Scripts/2. Demographics - SIMD.R")
 
 x <- 1 # object for figure numbers
 y <- 1 # object for table numbers
@@ -37,23 +37,35 @@ y <- 1 # object for table numbers
 
 \newline
 
-**For the most recent time periods available, `r LOCALITY` Locality had:**
+**For the most recent time periods available, **
+**`r locality_list[1]` Locality had:**
 
-+ A total population of **`r total_population`** people, where **`r gender_breakdown[gender_breakdown$sex == "M",]$perc`** were male, and **`r over65`%** were aged over 65.
-+ **`r perc_top_quintile`%** of people lived in the least deprived SIMD quintile, and **`r perc_bottom_quintile`%** lived in the most deprived quintile.
++ A total population of **`r total_population[[1]]`** people, where **`r gender_breakdown %>% filter(sex == "M", locality == locality_list[1]) %>% pull(perc)`** were male, and **`r over65[[1]]`%** were aged over 65.
++ **`r perc_top_quintile[[1]]`%** of people lived in the least deprived SIMD quintile, and **`r perc_bottom_quintile[[1]`%** lived in the most deprived quintile.
+
+<br>
+**`r locality_list[2]` Locality had:**
+
++ A total population of **`r total_population[[2]]`** people, where **`r gender_breakdown %>% filter(sex == "M", locality == locality_list[2]) %>% pull(perc)`** were male, and **`r over65[[2]]`%** were aged over 65.
++ **`r perc_top_quintile[[2]]`%** of people lived in the least deprived SIMD quintile, and **`r perc_bottom_quintile[[2]`%** lived in the most deprived quintile.
 
 
 ### Population
 <!-- Total Population Text -->
-In `r pop_max_year`, the total population of `r LOCALITY` locality was `r total_population`. The graph below shows the population distribution of the locality. Overall, **`r gender_breakdown[gender_breakdown$sex == "M",]$perc`** of the population are male, and **`r gender_breakdown[gender_breakdown$sex == "F",]$perc`** are female.
+In `r pop_max_year`, the total population of `r locality_list[1]` locality was `r total_population[[1]]`. Overall, **`r gender_breakdown %>% filter(sex == "M", locality == locality_list[1]) %>% pull(perc)`** of the population are male, and **`r gender_breakdown %>% filter(sex == "F", locality == locality_list[1]) %>% pull(perc)`** are female.
+<br>
+In `r pop_max_year`, the total population of `r locality_list[2]` locality was `r total_population[[2]]`. Overall, **`r gender_breakdown %>% filter(sex == "M", locality == locality_list[2]) %>% pull(perc)`** of the population are male, and **`r gender_breakdown %>% filter(sex == "F", locality == locality_list[2]) %>% pull(perc)`** are female.
+
+The population Age distribution plots for both localities are displayed in figure `r x`.
+
 
 ####Figure `r x`: Population by age and sex.
 
 \newline
 
-```{r echo = FALSE, fig.width = 7, fig.height = 3.5, out.width="50%" , warning = FALSE, fig.show='hold'}
-pop_pyramid[1] 
-pop_pyramid[2]
+```{r pyramid, echo = FALSE, fig.width = 7, fig.height = 3.5, out.width="50%" , warning = FALSE, results=}
+pop_pyramid_plot[[1]] 
+pop_pyramid_plot[[2]] 
 
 x <- x + 1
 ```
@@ -69,7 +81,7 @@ Figure `r x` shows the historical population of `r LOCALITY`, along with the NRS
 ####Figure `r x`: Population time trend and projection.
 \newline
 
-```{r echo = FALSE, fig.width = 7, fig.height = 3, warning = FALSE}
+```{r timetrend, echo = FALSE, fig.width = 7, fig.height = 3, warning = FALSE}
 pop_ts_plot
 
 x <- x + 1
@@ -82,9 +94,9 @@ Figure `r x` shows how population structure has changed between `r pop_min_year`
 ####Figure `r x`: Change in population structure over the last five years.
 \newline
 
-```{r echo = FALSE, fig.width = 7, fig.height = 3.5, out.width="50%" , warning = FALSE, fig.show='hold'}
-hist_pop_change[[1]]
-hist_pop_change[[2]]
+```{r histpop, echo = FALSE, fig.width = 7, fig.height = 3.5, out.width="50%" , warning = FALSE, fig.show='hold'}
+hist_pop_change_plots[[1]]
+hist_pop_change_plots[[2]]
 
 x <- x + 1
 ```
@@ -99,7 +111,7 @@ Of the `r pop_max_year` population in `r LOCALITY`, **`r perc_bottom_quintile`%*
 
 ####Figure `r x`: Map of Data Zones within `r LOCALITY` coloured by SIMD  quintiles.
 
-```{r echo = FALSE, fig.width = 7, warning = FALSE}
+```{r simdmap, echo = FALSE, fig.width = 7, warning = FALSE}
 simd_map
 
 x <- x + 1
@@ -113,7 +125,7 @@ The following table details the percentage of the 2016 population living in the 
 \newline
 
 ```{r echo = FALSE}
-knitr::kable(simd_diff_overall,
+knitr::kable(simd_diff_overall[[1]],
   col.names = c(
     "**Quintile**", "**Percent of 2016 Population (SIMD 2016 Ranking)**",
     "**Percent of 2021 Population (SIMD 2020 Ranking)**", "**Difference**"

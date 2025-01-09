@@ -26,11 +26,12 @@ library(broom)
 library(ggrepel)
 library(phsstyles)
 
+
 # Source in global functions/themes script
 #source("./Master RMarkdown Document & Render Code/Global Script.R")
 
 ## File path
-filepath <- paste0(ip_path, "Demographics/")
+filepath <- paste0(op_path, "Demographics/")
 
 
 
@@ -108,111 +109,215 @@ pops <- pops %>%
 
 
 ## Gender
-gender_breakdown <- list()
+# gender_breakdown <- list()
+# 
+# for(loc in locality_list){
+# 
+#   gender_breakdown[[loc]] <- pops %>%
+#   filter(
+#     hscp_locality == loc,
+#     year == max(year)
+#   ) %>%
+#   select(sex, total_pop) %>%
+#   mutate(
+#     total = sum(total_pop),
+#     perc = paste0(round_half_up(100 * total_pop / total, 1), "%")
+#   )
+# }
 
-for(loc in c(LOCALITY, OtherLocality)){
-
-  gender_breakdown[[loc]] <- pops %>%
-  filter(
-    hscp_locality == loc,
-    year == max(year)
-  ) %>%
-  select(sex, total_pop) %>%
-  mutate(
-    total = sum(total_pop),
-    perc = paste0(round_half_up(100 * total_pop / total, 1), "%")
-  )
+func_gender_breakdown <- function(loc) {
+  df <- pops %>%
+    filter(
+      hscp_locality == loc,
+      year == max(year)
+    ) %>%
+    select(sex, total_pop) %>%
+    mutate(
+      locality = loc,
+      total = sum(total_pop),
+      perc = paste0(round_half_up(100 * total_pop / total, 1), "%")
+    )
+  
+  return(df)
 }
+  
+gender_breakdown <- 
+  map_df(locality_list, func_gender_breakdown)
+
 
 ## Age & Gender
-pop_breakdown <- list()
-pop_pyramid <- list()
+pop_breakdown <- 
+  map_dfr(locality_list, \(x) pops %>%
+            filter(
+              hscp_locality == x,
+              year == max(year)
+            ) %>%
+            select(-year, -hscp_locality, -total_pop, -hscp2019name, -Pop65Plus) %>%
+            reshape2::melt(id.vars = "sex") %>%
+            mutate(variable = gsub(
+              "_", "-",
+              gsub(
+                "Plus", "+",
+                gsub("Pop", "", variable)
+              )
+            )) %>%
+            dplyr::rename(Gender = sex, Age = variable, Population = value) %>%
+            mutate(locality = x, 
+                   Gender = case_when(
+                            Gender == "M" ~ "Male",
+                            Gender == "F" ~ "Female"
+                    ))
+  )
 
-for(loc in c(LOCALITY, OtherLocality)){
+
+# for(loc in locality_list){
+#   
+#   pop_breakdown[[loc]] <- pops %>%
+#   filter(
+#     hscp_locality == loc,
+#     year == max(year)
+#   ) %>%
+#   select(-year, -hscp_locality, -total_pop, -hscp2019name, -Pop65Plus) %>%
+#   reshape2::melt(id.vars = "sex") %>%
+#   mutate(variable = gsub(
+#     "_", "-",
+#     gsub(
+#       "Plus", "+",
+#       gsub("Pop", "", variable)
+#     )
+#   )) %>%
+#   dplyr::rename(Gender = sex, Age = variable, Population = value) %>%
+#   mutate(Gender = case_when(
+#     Gender == "M" ~ "Male",
+#     Gender == "F" ~ "Female"
+#   ))
+
+func_plot_pyramid <- function(loc){
   
-  pop_breakdown[[loc]] <- pops %>%
-  filter(
-    hscp_locality == loc,
-    year == max(year)
-  ) %>%
-  select(-year, -hscp_locality, -total_pop, -hscp2019name, -Pop65Plus) %>%
-  reshape2::melt(id.vars = "sex") %>%
-  mutate(variable = gsub(
-    "_", "-",
-    gsub(
-      "Plus", "+",
-      gsub("Pop", "", variable)
+  df <- pop_breakdown %>% 
+    filter(locality == loc) 
+  
+  df %>% 
+    ggplot(aes(x = factor(Age, levels = unique(df$Age)),
+      fill = Gender
     )
-  )) %>%
-  dplyr::rename(Gender = sex, Age = variable, Population = value) %>%
-  mutate(Gender = case_when(
-    Gender == "M" ~ "Male",
-    Gender == "F" ~ "Female"
-  ))
-
-pop_pyramid[[loc]] <- ggplot(
-  pop_breakdown[[loc]],
-  aes(
-    x = factor(Age, levels = unique(pop_breakdown[[loc]]$Age)),
-    fill = Gender
-  )
-) +
-  geom_col(
-    data = subset(pop_breakdown[[loc]], Gender == "Male"),
-    aes(y = Population)
   ) +
-  geom_col(
-    data = subset(pop_breakdown[[loc]], Gender == "Female"),
-    aes(y = Population * (-1))
-  ) +
-  scale_y_continuous(
-    labels = abs,
-    limits = max(pop_breakdown[[loc]]$Population) * c(-1, 1)
-  ) +
-  coord_flip() +
-  scale_fill_manual(values = palette) +
-  theme_profiles() + # guides(fill = FALSE)
-  labs(
-    y = "Population", x = "Age Group",
-    title = paste0(str_wrap(`loc`, 50), " population pyramid ", pop_max_year)
-  )
+    geom_col(
+      data = df %>% filter(Gender == "Male"),
+      aes(y = Population)
+    ) +
+    geom_col(
+      data = df %>% filter(Gender == "Female"),
+      aes(y = Population * (-1))
+    ) +
+    scale_y_continuous(
+      labels = abs,
+      limits = max(df$Population) * c(-1, 1)
+    ) +
+    coord_flip() +
+    scale_fill_manual(values = palette) +
+    theme_profiles() + # guides(fill = FALSE)
+    labs(
+      y = "Population", x = "Age Group",
+      title = paste0(str_wrap(`loc`, 50), " population pyramid ", pop_max_year)
+    )
   
 }
+
+pop_pyramid_plot <- 
+  map(locality_list, func_plot_pyramid)
+# # assigns object name to each
+# for (i in seq_along(locality_list)){
+#   assign(paste0("pop_pyramid_", locality_list[i]), func_plot_pyramid(loc = locality_list[i]))
+# }
+
+
+
+# pop_pyramid[[loc]] <- ggplot(
+#   pop_breakdown[[loc]],
+#   aes(
+#     x = factor(Age, levels = unique(pop_breakdown[[loc]]$Age)),
+#     fill = Gender
+#   )
+# ) +
+#   geom_col(
+#     data = subset(pop_breakdown[[loc]], Gender == "Male"),
+#     aes(y = Population)
+#   ) +
+#   geom_col(
+#     data = subset(pop_breakdown[[loc]], Gender == "Female"),
+#     aes(y = Population * (-1))
+#   ) +
+#   scale_y_continuous(
+#     labels = abs,
+#     limits = max(pop_breakdown[[loc]]$Population) * c(-1, 1)
+#   ) +
+#   coord_flip() +
+#   scale_fill_manual(values = palette) +
+#   theme_profiles() + # guides(fill = FALSE)
+#   labs(
+#     y = "Population", x = "Age Group",
+#     title = paste0(str_wrap(`loc`, 50), " population pyramid ", pop_max_year)
+#   )
+#   
+
 
 
 # Population Structure Changes
-hist_pop_change <- list()
 
-for(loc in c(LOCALITY, OtherLocality)){
 hist_pop_breakdown <- pops %>%
   filter(
-    hscp_locality == loc,
+    hscp_locality %in% locality_list,
     year %in% c(max(year), max(year) - 5)
   ) %>%
-  select(-hscp_locality, -total_pop, -hscp2019name, -Pop65Plus) %>%
-  reshape2::melt(id.vars = c("sex", "year")) %>%
-  mutate(variable = gsub(
+  select( -total_pop, -hscp2019name, -Pop65Plus) %>%
+  pivot_longer(starts_with("Pop"), names_to = "Age", values_to = "Population") %>% 
+# reshape2::melt(id.vars = c("sex", "year")) %>%
+  mutate(Age = gsub(
     "_", "-",
     gsub(
       "Plus", "+",
-      gsub("Pop", "", variable)
+      gsub("Pop", "", Age)
     )
   )) %>%
-  dplyr::rename(Gender = sex, Age = variable, Population = value) %>%
-  dplyr::group_by(Gender, Age) %>%
+  dplyr::rename(Gender = sex) %>%
+  dplyr::group_by(hscp_locality, Gender, Age) %>%
   arrange(year) %>%
   dplyr::summarise(change = (last(Population) - first(Population)) / first(Population)) %>%
   ungroup() %>%
   mutate(Gender = ifelse(Gender == "F", "Female", "Male"))
 
+# hist_pop_breakdown <- pops %>%
+#   filter(
+#     hscp_locality %in% loc,
+#     year %in% c(max(year), max(year) - 5)
+#   ) %>%
+#   select(-hscp_locality, -total_pop, -hscp2019name, -Pop65Plus) %>%
+#   reshape2::melt(id.vars = c("sex", "year")) %>%
+#   mutate(variable = gsub(
+#     "_", "-",
+#     gsub(
+#       "Plus", "+",
+#       gsub("Pop", "", variable)
+#     )
+#   )) %>%
+#   dplyr::rename(Gender = sex, Age = variable, Population = value) %>%
+#   dplyr::group_by(Gender, Age) %>%
+#   arrange(year) %>%
+#   dplyr::summarise(change = (last(Population) - first(Population)) / first(Population)) %>%
+#   ungroup() %>%
+#   mutate(Gender = ifelse(Gender == "F", "Female", "Male"))
+
+
 ord <- c("0-4", "5-17", "18-44", "45-64", "65-74", "75-84", "85+")
 
-hist_pop_change[[loc]] <- ggplot(
-  hist_pop_breakdown,
-  aes(
-    x = factor(Age, levels = ord),
-    y = change, fill = Gender
-  )
+func_hist_pop_change_plot <- function(loc){
+  
+  hist_pop_breakdown %>% 
+    filter(hscp_locality == loc) %>% 
+    ggplot(aes(x = factor(Age, levels = ord),
+               y = change, 
+               fill = Gender)
 ) +
   geom_col(position = position_dodge()) +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
@@ -230,12 +335,37 @@ hist_pop_change[[loc]] <- ggplot(
   )
 }
 
+hist_pop_change_plots <- 
+  map(locality_list, func_hist_pop_change_plot)
+# hist_pop_change[[loc]] <- ggplot(
+#   hist_pop_breakdown,
+#   aes(
+#     x = factor(Age, levels = ord),
+#     y = change, fill = Gender
+#   )
+# ) +
+#   geom_col(position = position_dodge()) +
+#   geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+#   scale_y_continuous(labels = scales::percent) +
+#   scale_fill_manual(values = palette) +
+#   theme_profiles() +
+#   theme(plot.title = element_text(size = 12)) +
+#   labs(
+#     x = "Age Group", y = "Percent Change",
+#     title = paste(
+#       "Percent Change in Population from", pop_max_year - 5,
+#       "to", pop_max_year, "by Age and Sex in\n", loc
+#     ),
+#     caption = "Source: National Records Scotland"
+#   )
+
+
 ######################## SECTION 4: Population over time ############################
 
 ## 4a) Data wrangling ----
 pop_plot_dat <- list()
 
-for(loc in c(LOCALITY, OtherLocality)){
+for(loc in locality_list){
 ## Trend up to present year
 locality_pop_trend <- pops %>%
   filter(hscp_locality == loc) %>%
