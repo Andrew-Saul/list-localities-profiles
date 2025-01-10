@@ -31,22 +31,12 @@ library(phsstyles)
 #source("./Master RMarkdown Document & Render Code/Global Script.R")
 
 ## File path
-filepath <- paste0(op_path, "Demographics/")
-
-
-
-## Final document will loop through a list of localities
-# Create placeholder for for loop
-# LOCALITY <- "Inverness"
-# LOCALITY <- "Stirling City with the Eastern Villages Bridge of Allan and Dunblane"
-# LOCALITY <- "Ayr North and Former Coalfield Communities"
-
-
+#filepath <- paste0(op_path, "Demographics/")
 
 ########################## SECTION 2: Data Imports ###############################
 
 ## Locality/DZ lookup - difined in render code file
-#lookup <- read_in_localities()
+#lookup <- read_in_localities() - in main script
 
 ## Population data
 pop_raw_data <- read_in_dz_pops()
@@ -140,7 +130,7 @@ func_gender_breakdown <- function(loc) {
   
   return(df)
 }
-  
+
 gender_breakdown <- 
   map_df(locality_list, func_gender_breakdown)
 
@@ -224,6 +214,7 @@ func_plot_pyramid <- function(loc){
   
 }
 
+# LIST object of pyramid plots
 pop_pyramid_plot <- 
   map(locality_list, func_plot_pyramid)
 # # assigns object name to each
@@ -263,7 +254,7 @@ pop_pyramid_plot <-
 
 
 
-# Population Structure Changes
+# Population Structure Changes for WDuns
 
 hist_pop_breakdown <- pops %>%
   filter(
@@ -321,7 +312,7 @@ func_hist_pop_change_plot <- function(loc){
 ) +
   geom_col(position = position_dodge()) +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
-  scale_y_continuous(labels = scales::percent) +
+  scale_y_continuous(labels = scales::percent, limits = c(-0.3, 0.3)) +
   scale_fill_manual(values = palette) +
   theme_profiles() +
   theme(plot.title = element_text(size = 12)) +
@@ -363,7 +354,7 @@ hist_pop_change_plots <-
 ######################## SECTION 4: Population over time ############################
 
 ## 4a) Data wrangling ----
-pop_plot_dat <- list()
+pop_plot_dat_list <- list()
 
 for(loc in locality_list){
 ## Trend up to present year
@@ -429,21 +420,23 @@ pop_proj_dat <- locality_pop_proj %>%
   filter(hscp_locality == loc) %>%
   group_by(year) %>%
   dplyr::summarise(pop = sum(pop)) %>%
-  ungroup()
+  ungroup() 
 
 
-## 4b) Time trend plot ---- both localities on same plot
+## 4b) Time trend data list ---- both localities on same plot
 
-pop_plot_dat[[loc]] <- bind_rows(
+pop_plot_dat_list[[loc]] <- bind_rows(
   clean_names(mutate(locality_pop_trend, data = "HISTORICAL")),
   clean_names(mutate(pop_proj_dat, data = "PROJECTION"))
 ) %>%
-  mutate(plot_lab = if_else(year %% 2 == 0, format(pop, big.mark = ","), ""))
+  mutate(hscp_locality = loc,
+         plot_lab = if_else(year %% 2 == 0, format(pop, big.mark = ","), ""))
 
 }
 
 # combine pop locality lists into tibble
-pop_plot_dat <- bind_rows(pop_plot_dat, .id = "hscp_locality")
+pop_plot_dat <- 
+  bind_rows(pop_plot_dat_list)
 
 pop_ts_plot <- ggplot(pop_plot_dat, aes(x = year, y = pop, linetype = hscp_locality)) +
   geom_line(aes(color = data), size = 1) +
@@ -452,7 +445,7 @@ pop_ts_plot <- ggplot(pop_plot_dat, aes(x = year, y = pop, linetype = hscp_local
     vjust = 3, color = "#4a4a4a", size = 3
   ) +
   scale_x_continuous(breaks = pop_plot_dat$year) +
-  scale_y_continuous(labels = comma, limits = c(0, 1.1 * max(pop_plot_dat$pop))) +
+  scale_y_continuous(labels = comma, limits = c(20000, 1.1 * max(pop_plot_dat$pop))) +
   scale_colour_manual(values = palette) +
   scale_linetype_manual(values = c(1,4)) +
   theme_profiles() +
@@ -469,10 +462,11 @@ pop_ts_plot <- ggplot(pop_plot_dat, aes(x = year, y = pop, linetype = hscp_local
   )
 
 
-## 4c) Markdown text outputs ----
-
+## 4c) Markdown text outputs  for both localities---
+pop_graph_text <- list()
+pop_proj_text <- list()
 ## Past trends
-
+for(loc in locality_list){
 # run linear regression to approximate any linear trend in the data
 reg <- lm(data = locality_pop_trend, pop ~ year) %>% summary()
 
@@ -502,7 +496,7 @@ pop_change <- ifelse(pop_latest > pop_last, "been rising since",
   )
 )
 
-pop_graph_text <- ifelse(pval < 0.05,
+pop_graph_text[[loc]] <- ifelse(pval < 0.05,
 
   # if the pvalue is less than .05 then return:
   paste0(
@@ -534,8 +528,8 @@ pop_graph_text <- ifelse(pval < 0.05,
 pop_proj_change <- 100 * abs(pop_proj_dat[1, 2] - pop_proj_dat[6, 2]) / pop_proj_dat[1, 2]
 pop_proj_change <- round_half_up(pop_proj_change, 1) %>% as.character()
 
-pop_proj_text <- paste(
-  "The population in", LOCALITY, "is estimated to",
+pop_proj_text[[loc]] <- paste(
+  "The population in", loc, "is estimated to",
   ifelse(pop_proj_dat[1, 2] < pop_proj_dat[6, 2],
     paste0("increase by ", pop_proj_change, "%"),
     ifelse(pop_proj_dat[1, 2] == pop_proj_dat[6, 2],
@@ -546,6 +540,7 @@ pop_proj_text <- paste(
   "from ", pop_proj_dat[1, 1], " to ", pop_proj_dat[6, 1]
 )
 
+}  
 
 rm(
   reg, pval, coef, pop_latest, pop_last, change_point, pop_change, pop_proj_change,
@@ -553,15 +548,18 @@ rm(
 )
 
 
+
 ##################### SECTION 5: Objects for summary table #######################
 
 ## Relevant lookups for creating the table objects
-HSCP <- as.character(filter(lookup, hscp_locality == LOCALITY)$hscp2019name)
+#HSCP <- as.character(filter(lookup, hscp_locality == LOCALITY)$hscp2019name)
+
+# HSCP defined in main .rmd file
 
 # Determine other localities based on LOCALITY object
 other_locs <- lookup %>%
   select(hscp_locality, hscp2019name) %>%
-  filter(hscp2019name == HSCP & hscp_locality != LOCALITY) %>%
+  filter(hscp2019name == HSCP & hscp_locality != locality_list[1]) %>%
   arrange(hscp_locality)
 
 # Find number of locs per partnership
@@ -572,10 +570,32 @@ n_loc <- lookup %>%
   pull(locality_n)
 
 ## Locality objects
-total_population <- format_number_for_text(gender_breakdown[[LOCALITY]]$total[1])
-gender_ratio <- round_half_up(filter(gender_breakdown[[LOCALITY]], sex == "F")$total_pop / filter(gender_breakdown[[LOCALITY]], sex == "M")$total_pop, 2)
-over65 <- round_half_up(sum(filter(pop_breakdown[[LOCALITY]], Age %in% c("65-74", "75-84", "85+"))$Population) / gender_breakdown[[LOCALITY]]$total[1] * 100, 1)
+total_population <- list()
+gender_ratio <- list()
+over65 <- list()
 
+for(loc in locality_list){
+
+  total_population[[loc]] <- 
+  format_number_for_text(gender_breakdown %>% 
+                           filter(locality == loc) %>% 
+                           pull(total_pop) %>% sum())
+
+gender_ratio[[loc]] <- 
+  round_half_up(gender_breakdown %>% 
+                  filter(locality == loc, sex == "F") %>% 
+                  pull(total_pop) / gender_breakdown %>% 
+                  filter(locality == loc, sex == "M") %>% 
+                  pull(total_pop),2)
+
+over65[[loc]] <- 
+  round_half_up(sum(pop_breakdown %>% 
+                      filter(locality == loc, 
+                             Age %in% c("65-74", "75-84", "85+")) %>% 
+                      pull(Population)) / gender_breakdown %>% 
+                  filter(locality == loc) %>% 
+                  pull(total_pop) %>% sum() * 100, 1)
+}
 
 ## Other localities in HSCP objects
 

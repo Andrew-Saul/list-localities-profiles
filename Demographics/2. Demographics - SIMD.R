@@ -33,20 +33,6 @@ library(sf)
 # Source in global functions/themes script
 #source("./Master RMarkdown Document & Render Code/Global Script.R")
 
-## File path
-filepath <- paste0(ip_path, "Demographics/")
-
-## Final document will loop through a list of localities
-# Create placeholder for for loop
-# LOCALITY <-  "Skye, Lochalsh and West Ross"
-# LOCALITY <- "Falkirk West"
-# LOCALITY <- "Stirling City with the Eastern Villages Bridge of Allan and Dunblane"
-# LOCALITY <- "Ayr North and Former Coalfield Communities"
-# LOCALITY <- "Helensburgh and Lomond"
-# LOCALITY <- "City of Dunfermline"
-# LOCALITY <- "Inverness"
-
-
 ########################## SECTION 2: Data Imports ###############################
 
 ## Locality/DZ lookup
@@ -289,7 +275,9 @@ simd_map[[loc]] <- ggplot() +
   # scale_y_continuous(limits = c(min(zones_tidy$lat), max(zones_tidy$lat))) +
   theme_void() +
   guides(fill=guide_legend(title="SIMD Quintile")) +
-  labs(caption = "Source: Scottish Government, Public Health Scotland")
+  labs(caption = "Source: Scottish Government, Public Health Scotland",
+       subtitle = loc)
+  
 
 }
 
@@ -474,15 +462,15 @@ simd_diff_overall[[loc]] <- simd_16_20_dom[[loc]] %>%
 ##################### SECTION 4: Objects for summary table #######################
 
 ## Relevant lookups for creating the table objects
-lookup <- read_in_localities()
+#lookup <- read_in_localities()
 
 ## Relevant lookups for creating the table objects
-HSCP <- as.character(filter(lookup, hscp_locality == LOCALITY)$hscp2019name)
+#HSCP <- as.character(filter(lookup, hscp_locality == LOCALITY)$hscp2019name)
 
 # Determine other localities based on LOCALITY object
 other_locs <- lookup %>%
   select(hscp_locality, hscp2019name) %>%
-  filter(hscp2019name == HSCP & hscp_locality != LOCALITY) %>%
+  filter(hscp2019name == HSCP & hscp_locality != locality_list[1]) %>%
   arrange(hscp_locality)
 
 # Find number of locs per partnership
