@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE, comment = NA)
 # LOCALITY <- "Whalsay and Skerries"
 
 ## Project file path
-lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+#lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
 
 # # demographics
 # source("Demographics/Scripts/1. Demographics - Population.R")
@@ -262,7 +262,7 @@ indicators <- c(
 
 datatype <- c("count", "%", "%", "%")
 
-time <- c(max_year_housing, max_year_housing, max_year_housing, max_year_housing)
+time <- rep(max(house_dat$year), 4)
 
 # Values
 loc_values <- c(n_houses, perc_single_discount, perc_houses_AC, perc_houses_FH)

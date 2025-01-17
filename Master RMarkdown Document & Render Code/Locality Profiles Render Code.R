@@ -7,11 +7,13 @@ library(knitr)
 library(markdown)
 library(rmarkdown)
 library(here)
+library(kableExtra)
+library(patchwork)
 
 rm(list = ls())
 
 ## Input (Read) Project file path
-ip_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+data_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
 #lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
 
 # Output (Write) Project file path
@@ -24,11 +26,11 @@ Sys.umask("006")
 # Source in functions code
 source(here("Master RMarkdown Document & Render Code/Global Script.R"))
 
-## Specify HSCP here
-## NOTE - make sure that the formatting of the partnership's name matches the lookup
+# ## Specify Locality Here
 HSCP <- "West Dunbartonshire"
 
 # Below creates locality list of all the localities in a chosen HSCP
+
 lookup <- read_in_localities()
 
 HSCP_list <- unique(lookup$hscp2019name)
@@ -37,7 +39,6 @@ HSCP_list <- unique(lookup$hscp2019name)
 locality_list <- lookup |> 
   filter(hscp2019name == HSCP) |> 
   pull(hscp_locality)
-
 
 ## Loop to create the profiles for all the localities in the list
 
@@ -50,12 +51,18 @@ locality_list <- lookup |>
 
 # 1. HSCP Services Map
 
-map <- paste0(ip_path, "Master RMarkdown Document & Render Code/Output/maps/", HSCP, ".png")
+map <- paste0(data_path, "Master RMarkdown Document & Render Code/Output/maps/", HSCP, ".png")
 
 stopifnot(file.exists(map)) # Error if the file path doesn't exist.
 
-# 2. Loop through each locality to create the main body of the profiles and the summary table
-for (LOCALITY in locality_list) {
+#2. data folder and current year with data - need to check this manually
+
+household_data <- "Data 2024"
+services_data <- "DATA 2024"
+genhealth_data <- "DATA 2024"
+liferisk_data <- "DATA 2023"
+unscheduledcare_data <- "DATA 2023/"
+
   ## 2a) Source in all the scripts for a given LOCALITY
 
   # demographics
@@ -84,14 +91,14 @@ for (LOCALITY in locality_list) {
 
   ## 2b) Create the main body of the profiles
 
-  rmarkdown::render(paste0(op_path, "Master RMarkdown Document & Render Code/Locality_Profiles_Master_Markdown.Rmd"),
+  rmarkdown::render(here("Master RMarkdown Document & Render Code/Locality_Profiles_Master_Markdown.Rmd"),
     output_file = paste0(LOCALITY, " - Locality Profile.docx"),
     output_dir = paste0(op_path, "Master RMarkdown Document & Render Code/Output/")
   )
 
-  ## 2c) Create the summary tables
-  rmarkdown::render(paste0(op_path, "Summary Table/Summary-Table-Markdown.Rmd"),
-    output_file = paste0(LOCALITY, " - Summary Table.docx"),
-    output_dir = paste0(op_path, "Master RMarkdown Document & Render Code/Output/Summary Tables/")
-  )
+  # ## 2c) Create the summary tables
+  # rmarkdown::render(here("Summary Table/Summary-Table-Markdown.Rmd"),
+  #   output_file = paste0(LOCALITY, " - Summary Table.docx"),
+  #   output_dir = paste0(op_path, "Master RMarkdown Document & Render Code/Output/Summary Tables/")
+  # )
 }
