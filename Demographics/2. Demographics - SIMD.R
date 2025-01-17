@@ -276,7 +276,8 @@ simd_map[[loc]] <- ggplot() +
   theme_void() +
   guides(fill=guide_legend(title="SIMD Quintile")) +
   labs(caption = "Source: Scottish Government, Public Health Scotland",
-       subtitle = loc)
+       subtitle = loc)+
+  theme(text=element_text(size=14, family="Calibri"))
   
 
 }
@@ -297,33 +298,38 @@ simd2020_dom <- list()
 simd2016_dom <- list()
 simd_16_20_dom <- list()
 simd_diff_overall <- list()
+simd_diff_plot <- list()
 
 for(loc in locality_list){
   
-simd_domains[[loc]] <- simd2020 %>%
+simd_domain_df <- simd2020 %>%
   filter(hscp_locality == loc) %>%
   select(income, employment, education, access, crime, health, housing, total_pop) %>%
   reshape2::melt(id.vars = "total_pop") %>%
   group_by(variable, value) %>%
   dplyr::summarise(total_pop = sum(total_pop)) %>%
+  mutate(prop = total_pop/sum(total_pop)) 
+
+simd_domains[[loc]] <- 
+  simd_domain_df %>% 
   ggplot(aes(
-    fill = factor(value, levels = 1:5), y = total_pop,
+    fill = factor(value, levels = 1:5), y = prop,
     x = factor(variable, levels = tolower(plot_labels))
   )) +
-  geom_col(position = "fill") +
+  geom_col(position =  position_stack(reverse = TRUE)) +
+  coord_flip()+
   scale_x_discrete(labels = plot_labels) +
   scale_y_continuous(labels = scales::percent) +
   labs(
-    x = "", y = "Proportion of Population",
-    title = paste0("Breakdown of the SIMD Domains in ", str_wrap(loc, 50)),
-    caption = "Source: Scottish Government, Public Health Scotland, National Records Scotland"
+    x = "", y = "",
+    title = str_wrap(loc, 50)
   ) +
   scale_fill_manual(
     name = "Quintile",
     labels = simd_cats,
     values = simd_col, drop = FALSE
-  ) +
-  theme_profiles()
+  ) #+
+ # theme_profiles()
 
 ## 5d) SIMD 2016 vs 2020 ----
 
@@ -342,6 +348,8 @@ simd2016_dom[[loc]] <- simd2016 %>%
 names(simd2016_dom[[loc]])[2:9] <- paste0(names(simd2016_dom[[loc]])[2:9], "_16")
 
 }
+
+rm(simd_domain_df)
 
 # Get most up to date datazone populations
 
@@ -412,7 +420,7 @@ simd_16_20_dom[[loc]] <- full_join(base_data, simd2016_dom[[loc]]) %>%
     v_just = ifelse(diff < 0, 1.5, -1)
   )
 
-simd_diff_plot <- ggplot(simd_16_20_dom[[loc]], aes(x = quintile, y = diff, fill = factor(quintile))) +
+simd_diff_plot[[loc]] <- ggplot(simd_16_20_dom[[loc]], aes(x = quintile, y = diff, fill = factor(quintile))) +
   facet_wrap(~ factor(domain, levels = c("SIMD", unique(sort(simd_16_20_dom[[loc]]$domain))[1:7])), ncol = 4) +
   geom_line(aes(y = 0, group = 1)) +
   geom_col(
@@ -441,8 +449,8 @@ simd_diff_plot <- ggplot(simd_16_20_dom[[loc]], aes(x = quintile, y = diff, fill
   labs(
     x = "", y = "Difference from 2016",
     title = paste0(
-      "Difference in Population Living in Deprivation Quintiles by SIMD Domain\n",
-      "in 2016 and ", pop_max_year, " in ", str_wrap(loc, 50)
+      "Difference in ", str_wrap(loc, 50), " Population Living in Deprivation Quintiles\n by SIMD Domain",
+      "in 2016 and ", pop_max_year  
     ),
     caption = "Source: Scottish Government, National Records Scotland"
   ) +

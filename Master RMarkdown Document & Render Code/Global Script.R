@@ -191,7 +191,7 @@ read_in_dz_pops <- function() {
     left_join(read_in_localities(dz_level = TRUE))
 }
 
-read_in_dz_pops22 <- function() {
+read_in_dz_pops23 <- function() {
   fs::dir_ls(
     glue(
       "/conf/linkage/output/lookups/Unicode/",
@@ -210,9 +210,9 @@ read_in_dz_pops22 <- function() {
       hscp2019, hscp2019name, hscp2018, hscp2016, hb2019, hb2019name, hb2018, hb2014
     )) %>%
     left_join(read_in_localities(dz_level = TRUE)) |> 
-    filter(year == '2021') |> 
+    filter(year == '2022') |> 
     select(-year) |> 
-    mutate(year = 2022)
+    mutate(year = 2023)
 }
 
 ## Function to read in latest population projections ----

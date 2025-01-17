@@ -23,7 +23,7 @@ library(scales)
 # library(rgdal)
 library(broom)
 # library(OpenStreetMap)
-library(ggrepel)
+#library(ggrepel)
 library(phsstyles)
 
 
@@ -386,8 +386,8 @@ hscp_pop_proj_weight <- hscp_pop_proj %>%
     age %in% 75:84 ~ "Pop75_84",
     age > 84 ~ "Pop85Plus"
   )) %>%
-  # projection until 2028
-  filter(year %in% pop_max_year:2028) %>%
+  # projection until 2028 from 1 year after last collected year values
+  filter(year %in% pop_max_year:2028) %>% # ensures continuation of plot b/w actual and estimated
   # aggregate to age groups
   group_by(year, hscp2019, hscp2019name, sex, age_group) %>%
   dplyr::summarise(pop = sum(pop)) %>%
@@ -430,28 +430,32 @@ pop_plot_dat_list[[loc]] <- bind_rows(
   clean_names(mutate(pop_proj_dat, data = "PROJECTION"))
 ) %>%
   mutate(hscp_locality = loc,
-         plot_lab = if_else(year %% 2 == 0, format(pop, big.mark = ","), ""))
+       #  plot_lab = if_else(year %% 2 == 0, format(pop, big.mark = ","), "")
+         )
 
 }
+
 
 # combine pop locality lists into tibble
 pop_plot_dat <- 
   bind_rows(pop_plot_dat_list)
 
 pop_ts_plot <- ggplot(pop_plot_dat, aes(x = year, y = pop, linetype = hscp_locality)) +
-  geom_line(aes(color = data), size = 1) +
+  geom_line(aes(color = data), linewidth = 1) +
   geom_point(color = "#0f243e") +
-  geom_text_repel(aes(label = plot_lab),
-    vjust = 3, color = "#4a4a4a", size = 3
-  ) +
+  # geom_text_repel(aes(label = plot_lab),
+  #   vjust = 3, color = "#4a4a4a", size = 3
+  # ) +
   scale_x_continuous(breaks = pop_plot_dat$year) +
-  scale_y_continuous(labels = comma, limits = c(20000, 1.1 * max(pop_plot_dat$pop))) +
+  scale_y_continuous(limits = c(0, 1.1 * max(pop_plot_dat$pop))) +
   scale_colour_manual(values = palette) +
   scale_linetype_manual(values = c(1,4)) +
-  theme_profiles() +
+  #theme_profiles() +
+  theme_bw()+
   guides(color = guide_legend(title = "LOCALITY")) +
   theme(
     legend.position = "top",
+    legend.title = element_blank(),
     plot.title = element_text(size = 12),
     axis.text.x = element_text(angle = 75, vjust = 0.5, hjust = 0.5)
   ) +
@@ -461,6 +465,32 @@ pop_ts_plot <- ggplot(pop_plot_dat, aes(x = year, y = pop, linetype = hscp_local
     caption = "Source: National Records Scotland"
   )
 
+# create table of population and estimates
+pop_actual_est_table <- 
+  pop_plot_dat %>% 
+  select(-data) %>% 
+  distinct() %>% 
+  mutate(pop = scales::comma(pop, big.mark = ",")) %>% 
+  pivot_wider(names_from = "year",
+              values_from = pop)
+
+actual_pop <- 
+pop_actual_est_table %>% 
+  select(1, as.character(2011:2022)) %>% 
+kable() %>% 
+  kableExtra::kable_styling(full_width = F, position = "left") %>%
+
+  kableExtra::column_spec(1, bold = TRUE, border_right = TRUE, color = "black", background = "lightgrey") %>% 
+  kableExtra::add_header_above(header = c(" " = 1, "Historical Population" = 6, " "= 6))
+
+est_pop <- 
+  pop_actual_est_table %>% 
+  select(1, as.character(2023:2028)) %>% 
+kable() %>% 
+  kableExtra::kable_styling(full_width = F, position = "left") %>%
+  kableExtra::column_spec(2:7, background = "#b3D7F2") %>% 
+  kableExtra::column_spec(1, bold = TRUE, border_right = TRUE, color = "black", background = "lightgrey") %>% 
+  kableExtra::add_header_above(c(" " = 1, "Projected Population" = 6))
 
 ## 4c) Markdown text outputs  for both localities---
 pop_graph_text <- list()
