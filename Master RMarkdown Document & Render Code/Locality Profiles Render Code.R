@@ -4,7 +4,7 @@ library(readxl)
 library(janitor)
 library(tidyverse)
 library(knitr)
-library(markdown)
+#library(markdown)
 library(rmarkdown)
 library(here)
 library(kableExtra)
@@ -58,7 +58,7 @@ stopifnot(file.exists(map)) # Error if the file path doesn't exist.
 #2. data folder and current year with data - need to check this manually
 
 household_data <- "Data 2024"
-services_data <- "DATA 2024"
+services_data <- "DATA 2023" # no scotpho data in DATA 2024
 genhealth_data <- "DATA 2024"
 liferisk_data <- "DATA 2023"
 unscheduledcare_data <- "DATA 2023/"
