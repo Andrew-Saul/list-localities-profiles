@@ -33,13 +33,10 @@ library(data.table)
 
 ## Set file path
 #lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
-filepath <- paste0(ip_path, "/Services")
+filepath <- paste0(data_path, "/Services/")
 
 # Source in functions code
 #source("Master RMarkdown Document & Render Code/Global Script.R")
-
-# Determine latest subdirectory containing data - Services
-ext_year_dir <- select_latest_year_dir()
 
 ### Geographical lookups and objects ----
 
@@ -49,8 +46,8 @@ lookup <- read_in_localities(dz_level = TRUE)
 # Lookup without datazones
 lookup2 <- read_in_localities()
 
-## Determine HSCP
-HSCP <- as.character(filter(lookup2, hscp_locality == LOCALITY)$hscp2019name)
+## Determine HSCP - use Clydebank 
+HSCP <- as.character(filter(lookup2, hscp_locality == locality_list[1])$hscp2019name)
 
 # Get number of localities in HSCP
 n_loc <- lookup2 %>%
@@ -74,8 +71,7 @@ postcode_lkp <- read_in_postcodes() %>%
 
 ## Read in all data in services folder
 
-services_file_names <- list.files(ext_year_dir, pattern = "RDS")
-
+services_file_names <- list.files(paste0(filepath, services_data), pattern = "RDS")
 # for (file in services_file_names) {
 #   name <- substr(x = file, 1, 4)
 # 
@@ -88,7 +84,7 @@ services_file_names <- list.files(ext_year_dir, pattern = "RDS")
 for (file in services_file_names) {
   name <- substr(x = file, 1, 4)
   
-  data <- readRDS(paste0(ext_year_dir, "/", file)) %>%
+  data <- readRDS(paste0(filepath, services_data, "/", file)) %>%
     clean_names()
   
   assign(name, data)
@@ -110,11 +106,24 @@ access_dep <- clean_scotpho_dat(access_dep)
 
 latest_year_access_dep <- max(access_dep$year)
 
-access_dep_latest <- filter(
-  access_dep,
-  year == max(access_dep$year) &
-    (area_name == LOCALITY & area_type == "Locality")
-)$measure
+
+find_acc_dep_latest <- function(loc){
+    filter(
+      access_dep,
+      year == max(access_dep$year) &
+        (area_name == loc & area_type == "Locality")
+    )$measure
+}
+
+access_dep_latest <-
+  map(locality_list, find_acc_dep_latest)
+
+# access_dep_latest <-
+#   filter(
+#   access_dep,
+#   year == max(access_dep$year) &
+#     (area_name == LOCALITY & area_type == "Locality")
+# )$measure
 
 ## GP Practices ----
 
@@ -151,23 +160,23 @@ markers_miu <- hosp_lookup %>%
 markers_emergency_dep <- hosp_lookup %>%
   filter(type == "Emergency Department") %>%
   filter(hscp2019name == HSCP)
-
-Clacks_Royal <- hosp_lookup %>%
-  filter(name == "Forth Valley Royal Hospital")
+# 
+# Clacks_Royal <- hosp_lookup %>%
+#   filter(name == "Forth Valley Royal Hospital")
 
 # Ninewells hospital is incorrectly mapped even though postcode ok - so corrected coords here
 
-if (HSCP == "Dundee City") {
-  markers_emergency_dep <- markers_emergency_dep %>%
-    mutate(
-      latitude = if_else(latitude == 56.4617, 56.4659308, latitude),
-      longitude = if_else(longitude == -2.991432, -3.0378506, longitude)
-    )
-}
-
-if (HSCP == "Clackmannanshire & Stirling") {
-  markers_emergency_dep <- rbind(markers_emergency_dep, Clacks_Royal)
-}
+# if (HSCP == "Dundee City") {
+#   markers_emergency_dep <- markers_emergency_dep %>%
+#     mutate(
+#       latitude = if_else(latitude == 56.4617, 56.4659308, latitude),
+#       longitude = if_else(longitude == -2.991432, -3.0378506, longitude)
+#     )
+# }
+# 
+# if (HSCP == "Clackmannanshire & Stirling") {
+#   markers_emergency_dep <- rbind(markers_emergency_dep, Clacks_Royal)
+# }
 
 ## Care Homes ----
 
@@ -183,26 +192,58 @@ markers_care_home <- care_homes %>%
 ###### 4. Table ######
 
 # Subset care which is not Elderly care for table
+# other_care_type <- care_homes %>%
+#   select(type = care_service, subtype, name = service_name, service_postcode) %>%
+#   filter(type == "Care Home Service") %>%
+#   filter(subtype != "Older People") %>%
+#   mutate(postcode = gsub(" ", "", service_postcode)) %>%
+#   left_join(postcode_lkp, by = "postcode") %>%
+#   filter(hscp_locality == LOCALITY)
+# 
+# # Create table
+# services_tibble <- tibble(
+#   Type = c("**Primary Care**", "**A&E**", "", "**Care Home**", ""),
+#   Service = c("GP Practice", "Emergency Department", "Minor Injuries Unit", "Elderly Care", "Other"),
+#   Number = c(
+#     nrow(filter(markers_gp, hscp_locality == LOCALITY)),
+#     nrow(filter(markers_emergency_dep, hscp_locality == LOCALITY)),
+#     nrow(filter(markers_miu, hscp_locality == LOCALITY)),
+#     nrow(filter(markers_care_home, hscp_locality == LOCALITY)),
+#     nrow(other_care_type)
+#   )
+# )
+fieldname <- list()
+for (loc in locality_list){
+# Subset care which is not Elderly care for table
 other_care_type <- care_homes %>%
   select(type = care_service, subtype, name = service_name, service_postcode) %>%
   filter(type == "Care Home Service") %>%
   filter(subtype != "Older People") %>%
   mutate(postcode = gsub(" ", "", service_postcode)) %>%
   left_join(postcode_lkp, by = "postcode") %>%
-  filter(hscp_locality == LOCALITY)
+  filter(hscp_locality == loc)
 
 # Create table
-services_tibble <- tibble(
-  Type = c("**Primary Care**", "**A&E**", "", "**Care Home**", ""),
-  Service = c("GP Practice", "Emergency Department", "Minor Injuries Unit", "Elderly Care", "Other"),
-  Number = c(
-    nrow(filter(markers_gp, hscp_locality == LOCALITY)),
-    nrow(filter(markers_emergency_dep, hscp_locality == LOCALITY)),
-    nrow(filter(markers_miu, hscp_locality == LOCALITY)),
-    nrow(filter(markers_care_home, hscp_locality == LOCALITY)),
+fieldname[[loc]] <- list(c(
+    nrow(filter(markers_gp, hscp_locality == loc)),
+    nrow(filter(markers_emergency_dep, hscp_locality == loc )),
+    nrow(filter(markers_miu, hscp_locality == loc)),
+    nrow(filter(markers_care_home, hscp_locality == loc)),
     nrow(other_care_type)
   )
+  )
+
+names(fieldname[[loc]]) <- paste0(loc, " Number")
+}
+
+services_tibble <- tibble(
+  Type = c("**Primary Care**", "**A&E**", "", "**Care Home**", ""),
+  Service = c("GP Practice", "Emergency Department", "Minor Injuries Unit", "Elderly Care", "Other")
 )
+
+
+services_tibble <-  
+  bind_cols(services_tibble, fieldname[1], fieldname[2])
 
 
 # detach(package:tidyverse, unload=TRUE)
