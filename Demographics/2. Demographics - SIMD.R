@@ -313,16 +313,18 @@ simd_domains <-
   reshape2::melt(id.vars = "total_pop") %>%
   group_by(variable, value) %>%
   dplyr::summarise(total_pop = sum(total_pop)) %>%
+    mutate(prop = total_pop / sum(total_pop)) %>% 
   ggplot(aes(
-    fill = factor(value, levels = 1:5), y = total_pop,
+    fill = factor(value, levels = 1:5), y = prop,
     x = factor(variable, levels = tolower(plot_labels))
   )) +
-  geom_col(position = "fill") +
+  geom_col(position = position_stack(reverse = TRUE)) +
+    coord_flip()+
   scale_x_discrete(labels = plot_labels) +
   scale_y_continuous(labels = scales::percent) +
   labs(
     x = "", y = "Proportion of Population",
-    subtitle = paste0("Breakdown of the SIMD Domains in ", str_wrap(.x, 35))#,
+    subtitle = paste0("Breakdown of the SIMD Domains in \n", str_wrap(.x, 35))#,
    # caption = "Source: Scottish Government, Public Health Scotland, National Records Scotland"
   ) +
   scale_fill_manual(
