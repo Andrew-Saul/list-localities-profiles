@@ -55,7 +55,7 @@ map <- paste0(ip_path, "Master RMarkdown Document & Render Code/Output/maps/", H
 stopifnot(file.exists(map)) # Error if the file path doesn't exist.
 
 # 2. Loop through each locality to create the main body of the profiles and the summary table
-for (LOCALITY in locality_list) {
+#for (LOCALITY in locality_list) {
   ## 2a) Source in all the scripts for a given LOCALITY
 
   # demographics
