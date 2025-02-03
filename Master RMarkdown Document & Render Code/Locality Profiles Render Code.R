@@ -7,6 +7,7 @@ library(knitr)
 library(markdown)
 library(rmarkdown)
 library(here)
+library(patchwork)
 
 rm(list = ls())
 

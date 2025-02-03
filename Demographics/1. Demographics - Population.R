@@ -206,7 +206,7 @@ hist_pop_change <-
         theme(plot.title = element_text(size = 12)) +
         labs(x = "Age Group", 
              y = "Percent Change",
-             title = paste("Percent Change in Population from", pop_max_year - 5,
+             title = paste("Percent Change in Population \nfrom", pop_max_year - 5,
       "to", pop_max_year, "by Age and Sex in\n", .x)#,
       #caption = "Source: National Records Scotland"
         )
@@ -304,9 +304,15 @@ pop_ts_plot <-
               aes(x = year, y = pop)) +
       geom_line(aes(color = data), size = 1) +
       geom_point(color = "#0f243e") +
-      geom_text(aes(label = plot_lab),
-        vjust = 2, color = "#4a4a4a", size = 3
-      ) +
+        geom_richtext(aes(label = plot_lab),
+                      hjust = 1,
+                      vjust = 1, 
+                      color = "#4a4a4a", 
+                      size = 3,
+                      angle = 45)+
+      # geom_text(aes(label = plot_lab),
+      #   vjust = 2, color = "#4a4a4a", size = 3
+      # ) +
       scale_x_continuous(breaks = pop_plot_dat_df$year) +
       scale_y_continuous( labels = comma, limits = c(0, 1.1 * max(pop_plot_dat_df$pop))) +
       scale_colour_manual(values = palette) +
@@ -319,7 +325,7 @@ pop_ts_plot <-
       ) +
       labs(
         y = "Population", x = "Year",
-        title = paste0("Population Over Time in ", str_wrap(`.x`, 30))#,
+        title = paste0("Population Over Time\nin ", str_wrap(`.x`, 20))#,
         #caption = "Source: National Records Scotland"
       )
 )
