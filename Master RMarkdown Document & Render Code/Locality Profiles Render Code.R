@@ -7,6 +7,9 @@ library(knitr)
 library(markdown)
 library(rmarkdown)
 library(here)
+library(ggtext)
+library(kableExtra)
+library(patchwork)
 
 rm(list = ls())
 
@@ -55,7 +58,7 @@ map <- paste0(ip_path, "Master RMarkdown Document & Render Code/Output/maps/", H
 stopifnot(file.exists(map)) # Error if the file path doesn't exist.
 
 # 2. Loop through each locality to create the main body of the profiles and the summary table
-for (LOCALITY in locality_list) {
+#for (LOCALITY in locality_list) {
   ## 2a) Source in all the scripts for a given LOCALITY
 
   # demographics
@@ -94,4 +97,4 @@ for (LOCALITY in locality_list) {
     output_file = paste0(LOCALITY, " - Summary Table.docx"),
     output_dir = paste0(op_path, "Master RMarkdown Document & Render Code/Output/Summary Tables/")
   )
-}
+
