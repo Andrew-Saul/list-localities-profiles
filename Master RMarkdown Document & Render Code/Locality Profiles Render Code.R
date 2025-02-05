@@ -7,6 +7,8 @@ library(knitr)
 library(markdown)
 library(rmarkdown)
 library(here)
+library(ggtext)
+library(kableExtra)
 library(patchwork)
 
 rm(list = ls())
@@ -95,4 +97,4 @@ stopifnot(file.exists(map)) # Error if the file path doesn't exist.
     output_file = paste0(LOCALITY, " - Summary Table.docx"),
     output_dir = paste0(op_path, "Master RMarkdown Document & Render Code/Output/Summary Tables/")
   )
-}
+
