@@ -206,8 +206,8 @@ hist_pop_change <-
         theme(plot.title = element_text(size = 12)) +
         labs(x = "Age Group", 
              y = "Percent Change",
-             title = paste("Percent Change in Population \nfrom", pop_max_year - 5,
-      "to", pop_max_year, "by Age and Sex in\n", .x)#,
+             title = paste("Percent Change in Population from", pop_max_year - 5,
+      "to", pop_max_year, "\nby Age and Sex in", .x)#,
       #caption = "Source: National Records Scotland"
         )
   )
