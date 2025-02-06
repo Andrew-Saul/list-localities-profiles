@@ -127,50 +127,43 @@ pop_breakdown <-
   map(locality_list, 
       ~ pops %>% 
         filter(hscp_locality == .x, year == max(year)) %>% 
-  select(-c(year, total_pop, hscp2019name, Pop65Plus)) %>%
-  pivot_longer(Pop0_4:Pop85Plus, names_to = "Age", values_to = "Population") %>% 
-  mutate(Age = str_replace_all(Age, "_", "-"),
-         Age = str_replace_all(Age, "Plus", "+"),
-         Age = str_replace_all(Age, "Pop", "")) %>%
-  dplyr::rename(Gender = sex) %>%
-  mutate(Gender = case_when(
-    Gender == "M" ~ "Male",
-    Gender == "F" ~ "Female"))
-  ) %>% 
-  set_names(locality_list)
+        select(-c(year, total_pop, hscp2019name, Pop65Plus)) %>%
+        pivot_longer(Pop0_4:Pop85Plus, names_to = "Age", values_to = "Population") %>% 
+        mutate(Age = str_replace_all(Age, "_", "-"),
+               Age = str_replace_all(Age, "Plus", "+"),
+               Age = str_replace_all(Age, "Pop", "")) %>%
+        dplyr::rename(Gender = sex) %>%
+        mutate(Gender = case_when(
+          Gender == "M" ~ "Male",
+          Gender == "F" ~ "Female")
+        )
+  )  %>% set_names(locality_list)
 
-
-pop_pyramid <- list()
-for (loc in locality_list){
-  pop_pyramid[[loc]] <- ggplot(
-    pop_breakdown[[loc]],
-    aes(
-      x = factor(Age, levels = unique(pop_breakdown[[loc]]$Age)),
-      fill = Gender
-    )
-  ) +
-    geom_col(
-      data = subset(pop_breakdown[[loc]], Gender == "Male"),
-      aes(y = Population)
-    ) +
-    geom_col(
-      data = subset(pop_breakdown[[loc]], Gender == "Female"),
-      aes(y = Population * (-1))
-    ) +
-    scale_y_continuous(
-      labels = abs,
-      limits = max(pop_breakdown[[loc]]$Population) * c(-1, 1)
-    ) +
-    coord_flip() +
-    scale_fill_manual(values = palette) +
-    theme_profiles() + # guides(fill = FALSE)
-    labs(
-      y = "Population", x = "Age Group",
-      title = paste0(str_wrap(`loc`, 50), " population pyramid ", pop_max_year)
-    )
-}
-
-
+pop_pyramid <- 
+  map(locality_list, 
+      ~ggplot(pop_breakdown[[.x]],
+              aes(y = factor(Age, levels = unique(pop_breakdown[[.x]]$Age)),
+                  fill = Gender)
+      ) + 
+        geom_col(
+          data = subset(pop_breakdown[[.x]], Gender == "Male"),
+          aes(x = Population)
+        ) +
+        geom_col(
+          data = subset(pop_breakdown[[.x]], Gender == "Female"),
+          aes(x = Population * (-1))
+        ) +
+        scale_x_continuous(
+          labels = abs,
+          limits = max(pop_breakdown[[.x]]$Population) * c(-1, 1)
+        ) +
+        scale_fill_manual(values = palette) +
+        theme_profiles() +
+        labs(x = "Population",
+             y = "Age Group",
+             title = paste0(str_wrap(.x, 50), " population pyramid ", pop_max_year)
+        )
+  )
 
 # Population Structure Changes
 
@@ -292,43 +285,38 @@ pop_proj_dat <-
 
 ## 4b) Time trend plot ----
 
-pop_plot_dat_df <- bind_rows(
-  clean_names(mutate(locality_pop_trend %>% bind_rows(), data = "HISTORICAL")),
-  clean_names(mutate(pop_proj_dat %>% bind_rows(), data = "PROJECTION"))
-) %>%
-  mutate(plot_lab = if_else(year %% 2 == 0, format(pop, big.mark = ","), ""))
+# pop_plot_dat <- bind_rows(
+#   clean_names(mutate(locality_pop_trend %>% bind_rows(), data = "HISTORICAL")),
+#   clean_names(mutate(pop_proj_dat %>% bind_rows(), data = "PROJECTION"))
+# ) %>%
+#   mutate(plot_lab = if_else(year %% 2 == 0, format(pop, big.mark = ","), ""))
 
 pop_ts_plot <- 
   map(locality_list, 
-      ~ggplot(pop_plot_dat_df %>% filter(hscp_locality == .x), 
-              aes(x = year, y = pop)) +
-      geom_line(aes(color = data), size = 1) +
-      geom_point(color = "#0f243e") +
-        geom_richtext(aes(label = plot_lab),
-                      hjust = 1,
-                      vjust = 1, 
-                      color = "#4a4a4a", 
-                      size = 3,
-                      angle = 45)+
-      # geom_text(aes(label = plot_lab),
-      #   vjust = 2, color = "#4a4a4a", size = 3
-      # ) +
-      scale_x_continuous(breaks = pop_plot_dat_df$year) +
-      scale_y_continuous( labels = comma, limits = c(0, 1.1 * max(pop_plot_dat_df$pop))) +
-      scale_colour_manual(values = palette) +
-      theme_profiles() +
-      guides(color = guide_legend(title = "")) +
-      theme(
-        legend.position = "none",
-        plot.title = element_text(size = 12),
-        axis.text.x = element_text(angle = 75, vjust = 0.5, hjust = 0.5)
-      ) +
-      labs(
-        y = "Population", x = "Year",
-        title = paste0("Population Over Time\nin ", str_wrap(`.x`, 20))#,
-        #caption = "Source: National Records Scotland"
-      )
-)
+      ~pop_plot_dat %>% filter(hscp_locality == .x) %>% 
+        ggplot(aes(x = year, y = pop)) +
+        geom_line(aes(color = data), linewidth = 1) +
+        geom_point(color = "#0f243e") +
+        geom_text(aes(label = plot_lab),
+                  vjust = 2, color = "#4a4a4a", size = 3
+        ) +
+        scale_x_continuous(breaks = pop_plot_dat[pop_plot_dat$hscp_locality==.x, ]$year) +
+        scale_y_continuous(labels = comma, 
+                           limits = c(0, 1.1 * max(pop_plot_dat[pop_plot_dat$hscp_locality==.x, ]$pop))) +
+        scale_colour_manual(values = palette) +
+        theme_profiles() +
+        guides(color = guide_legend(title = "")) +
+        theme(
+          legend.position = "none",
+          plot.title = element_text(size = 12),
+          axis.text.x = element_text(angle = 75, vjust = 0.5, hjust = 0.5)
+        ) +
+        labs(
+          y = "Population", x = "Year",
+          title = paste0("Population Over Time in ", str_wrap(.x, 45))#,
+         # caption = "Source: National Records Scotland"
+        )
+  )
 
 ## 4c) Markdown text outputs ----
 
