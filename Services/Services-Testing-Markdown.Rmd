@@ -15,7 +15,7 @@ options(kableExtra.auto_format = FALSE)
 
 library(here)
 # Line below for testing only
-#Loc <- "Marr"
+# Loc <- "Marr"
 
 locality <- Loc
 LOCALITY <- Loc

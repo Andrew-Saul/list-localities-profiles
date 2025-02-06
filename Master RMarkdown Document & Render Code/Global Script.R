@@ -152,13 +152,13 @@ read_in_postcodes <- function() {
     # Read in the most up to date lookup version
     max() |>
     arrow::read_parquet(col_select = -c(hscp2019, hscp2019name, hb2019, hb2019name))
-  
+
   data <- dplyr::left_join(
     data,
     read_in_localities(dz_level = TRUE),
     by = dplyr::join_by(datazone2011),
     relationship = "many-to-one"
-    )
+  )
 
   return(data)
 }
@@ -209,9 +209,9 @@ read_in_dz_pops22 <- function() {
       ca2018, ca2011,
       hscp2019, hscp2019name, hscp2018, hscp2016, hb2019, hb2019name, hb2018, hb2014
     )) %>%
-    left_join(read_in_localities(dz_level = TRUE)) |> 
-    filter(year == '2021') |> 
-    select(-year) |> 
+    left_join(read_in_localities(dz_level = TRUE)) |>
+    filter(year == "2021") |>
+    select(-year) |>
     mutate(year = 2022)
 }
 
@@ -244,22 +244,20 @@ read_in_pop_proj <- function() {
   left_join(proj, hscp_lkp)
 }
 
-# function to automatically select latest Data folder in directory ie. "data \\d{4}" 
+# function to automatically select latest Data folder in directory ie. "data \\d{4}"
 select_latest_year_dir <- function(fp = filepath) {
-  
-  data_folder_names <- str_subset(list.files(fp, full.names = T), regex("DATA", ignore_case = T)) 
-  
-  max_year <-  str_extract(data_folder_names, "\\b\\d{4}\\b") 
-  max_year <- max_year[!is.na(max_year)]  %>% max()
-  
+  data_folder_names <- str_subset(list.files(fp, full.names = T), regex("DATA", ignore_case = T))
+
+  max_year <- str_extract(data_folder_names, "\\b\\d{4}\\b")
+  max_year <- max_year[!is.na(max_year)] %>% max()
+
   output <- str_subset(data_folder_names, max_year)
-  
-  if(length(output) != 1){
+
+  if (length(output) != 1) {
     stop("More than one folder has been selected. Please correct before continuing")
-  } 
-  
+  }
+
   return(output)
-  
 }
 #### Functions for ScotPHO data ####
 

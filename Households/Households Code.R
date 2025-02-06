@@ -33,12 +33,12 @@ library(gridExtra)
 library(reshape2)
 
 # Update Data Year (this is the maximum year available for both housing data sets from NRS)
-#max_year_housing <- 2022
+# max_year_housing <- 2022
 # Update Publication Year (the year marked on the Data folder)
-#ext_year <- 2023
+# ext_year <- 2023
 
 # Set Directory.
-filepath <- paste0(ip_path,"Households/")
+filepath <- paste0(ip_path, "Households/")
 
 # AS: automatic detection of latest Data folder for NRS housing
 # Update Publication Year (the year marked on the Data folder)
@@ -46,7 +46,7 @@ ext_year_dir <- select_latest_year_dir()
 
 
 # Read in Global Script for RMarkdown (For testing only)
-#source("/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/Master RMarkdown Document & Render Code/Global Script.R")
+# source("/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/Master RMarkdown Document & Render Code/Global Script.R")
 
 # Set locality (for testing only)
 ## LOCALITY = "Whalsay and Skerries"
@@ -57,19 +57,20 @@ ext_year_dir <- select_latest_year_dir()
 
 ## 2a) Data imports & cleaning ----
 
-#household file
+# household file
 household_est <- paste0(ext_year_dir, "/household_estimates.xlsx")
 
 # AS: Update Data Year (this is the maximum year available for both housing data sets from NRS)
-housing_sheets <- 
-  str_subset(excel_sheets(household_est), "\\d{4}") 
+housing_sheets <-
+  str_subset(excel_sheets(household_est), "\\d{4}")
 
 # get historic housing data, each year is on a seperate sheet so do a for loop
-  house_raw_dat <- map_df(housing_sheets, ~read_excel(household_est,
-                                                      sheet = .x, skip = 3) %>%
-                          mutate(year = .x)) %>% 
-    clean_names() %>% 
-    select(year, 1:12)
+house_raw_dat <- map_df(housing_sheets, ~ read_excel(household_est,
+  sheet = .x, skip = 3
+) %>%
+  mutate(year = .x)) %>%
+  clean_names() %>%
+  select(year, 1:12)
 
 # Global Script Function to read in Localities Lookup
 lookup <- read_in_localities(dz_level = TRUE) %>%
@@ -94,7 +95,7 @@ house_dat <- house_raw_dat %>% filter(data_zone_code %in% lookup$datazone2011)
 #   dplyr::ungroup() %>%
 #   dplyr::mutate_at(.vars = 3:7, .funs = funs(perc = 100 * . / total_dwellings))
 
-#AS: updated superseeded script
+# AS: updated superseeded script
 # aggregate data
 house_dat1 <- house_dat %>%
   dplyr::group_by(year) %>%
@@ -107,7 +108,7 @@ house_dat1 <- house_dat %>%
     tax_discount = sum(dwellings_with_a_single_adult_council_tax_discount)
   ) %>%
   dplyr::ungroup() %>%
-  dplyr::mutate(across(.cols = 3:7,  ~ .x * 100 / total_dwellings, .names = "{.col}_perc"))
+  dplyr::mutate(across(.cols = 3:7, ~ .x * 100 / total_dwellings, .names = "{.col}_perc"))
 
 
 ## 2b) Text objects ----
@@ -141,12 +142,12 @@ houses_ts <- ggplot(house_dat1, aes(x = year, y = total_dwellings, group = 1)) +
   scale_y_continuous(labels = scales::comma, limits = c(0, 1.1 * max(house_dat1$total_dwellings))) +
   labs(
     x = "Year", y = "Number of Dwellings",
-    title = paste0("Number of Dwellings by Year in ", str_wrap(`LOCALITY`, 40)," ", max(house_dat1$year)),
+    title = paste0("Number of Dwellings by Year in ", str_wrap(`LOCALITY`, 40), " ", max(house_dat1$year)),
     caption = "Source: Council Tax billing system (via NRS)"
   ) +
   theme(plot.title = element_text(size = 12))
 
-#AS: updated superseeded script
+# AS: updated superseeded script
 # Table
 house_table <- house_dat1 %>%
   select(

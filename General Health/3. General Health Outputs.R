@@ -10,10 +10,10 @@
 ############# 1) PACKAGES, DIRECTORY, LOOKUPS, DATA IMPORT + CLEANING #############
 
 ## load packages
-#library(readxl)
+# library(readxl)
 library(tidyverse)
-#library(reshape2)
-#library(knitr)
+# library(reshape2)
+# library(knitr)
 library(janitor)
 library(cowplot)
 library(gridExtra)
@@ -27,27 +27,27 @@ library(arrow)
 
 
 # Determine locality (for testing only)
-#LOCALITY <- "Inverness"
+# LOCALITY <- "Inverness"
 # LOCALITY <- "Stirling City with the Eastern Villages Bridge of Allan and Dunblane"
 # LOCALITY <- "Mid-Argyll, Kintyre and Islay"
 # LOCALITY <- "City of Dunfermline"
 # LOCALITY <- "Barra"
 
 # Set year of data extracts for folder
-#ext_year <- 2023
+# ext_year <- 2023
 
 # Set file path
-#ip_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+# ip_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
 
 # Set Directory.
-filepath <- paste0(ip_path,"General Health/")
+filepath <- paste0(ip_path, "General Health/")
 
 # AS: automatic detection of latest Data folder for NRS housing
 # Update Publication Year (the year marked on the Data folder)
 ext_year_dir <- select_latest_year_dir()
 
 # Source in functions code
-#source("Master RMarkdown Document & Render Code/Global Script.R")
+# source("Master RMarkdown Document & Render Code/Global Script.R")
 
 ### Geographical lookups and objects ----
 
@@ -94,42 +94,44 @@ theme_icon <- function() {
 life_exp_male <- read_parquet(paste0(ext_year_dir, "/scotpho_data_extract_life_exp_male.parquet")) %>%
   clean_scotpho_dat()
 # Females
-life_exp_fem <-  read_parquet(paste0(ext_year_dir, "/scotpho_data_extract_life_exp_fem.parquet")) %>%
+life_exp_fem <- read_parquet(paste0(ext_year_dir, "/scotpho_data_extract_life_exp_fem.parquet")) %>%
   clean_scotpho_dat()
 
 life_exp <- bind_rows(life_exp_male, life_exp_fem) %>%
   mutate(sex = if_else(indicator == "Life expectancy, males", "Male", "Female")) %>%
-  #mutate(period_short = gsub("to", "-", substr(period, 1, 12))) # - in scotland row, output includes (3
-  mutate(period_short = str_replace(period, " to ", "-") %>% 
-           str_extract(., "\\d{4}-\\d{4}"))
+  # mutate(period_short = gsub("to", "-", substr(period, 1, 12))) # - in scotland row, output includes (3
+  mutate(period_short = str_replace(period, " to ", "-") %>%
+    str_extract(., "\\d{4}-\\d{4}"))
 
 rm(life_exp_fem, life_exp_male)
 
 check_missing_data_scotpho(life_exp)
 
 ## Deaths aged 15-44
-deaths_15_44 <-  read_parquet(paste0(ext_year_dir, "/scotpho_data_extract_deaths_15_44.parquet")) %>%
+deaths_15_44 <- read_parquet(paste0(ext_year_dir, "/scotpho_data_extract_deaths_15_44.parquet")) %>%
   clean_scotpho_dat() %>%
-  mutate(period_short = str_replace(period, " to ", "-") %>% 
-           str_extract(., "\\d{4}-\\d{4}"))
+  mutate(period_short = str_replace(period, " to ", "-") %>%
+    str_extract(., "\\d{4}-\\d{4}"))
 
 check_missing_data_scotpho(deaths_15_44)
 
 ## Cancer registrations
-cancer_reg <-read_parquet(paste0(ext_year_dir, "/scotpho_data_extract_cancer_reg.parquet")) %>%
-  mutate(area_type = as.character(area_type),
-         area_name = as.character(area_name)) %>% 
+cancer_reg <- read_parquet(paste0(ext_year_dir, "/scotpho_data_extract_cancer_reg.parquet")) %>%
+  mutate(
+    area_type = as.character(area_type),
+    area_name = as.character(area_name)
+  ) %>%
   clean_scotpho_dat() %>%
-  mutate(period_short = str_replace(period, " to ", "-") %>% 
-           str_extract(., "\\d{4}-\\d{4}"))
+  mutate(period_short = str_replace(period, " to ", "-") %>%
+    str_extract(., "\\d{4}-\\d{4}"))
 
 check_missing_data_scotpho(cancer_reg)
 
 ## Early deaths cancer
 early_deaths_cancer <- read_parquet(paste0(ext_year_dir, "/scotpho_data_extract_early_deaths_cancer.parquet")) %>%
   clean_scotpho_dat() %>%
-  mutate(period_short = str_replace(period, " to ", "-") %>% 
-           str_extract(., "\\d{4}-\\d{4}"))
+  mutate(period_short = str_replace(period, " to ", "-") %>%
+    str_extract(., "\\d{4}-\\d{4}"))
 
 check_missing_data_scotpho(early_deaths_cancer)
 
@@ -156,7 +158,7 @@ copd_hosp <- read_parquet(paste0(ext_year_dir, "/scotpho_data_extract_copd_hosp.
 check_missing_data_scotpho(copd_hosp)
 
 ## Anxiety/depression/psychosis prescriptions
-adp_presc <-read_parquet(paste0(ext_year_dir, "/scotpho_data_extract_adp_presc.parquet")) %>%
+adp_presc <- read_parquet(paste0(ext_year_dir, "/scotpho_data_extract_adp_presc.parquet")) %>%
   clean_scotpho_dat() %>%
   mutate(period_short = substr(period, 1, 7))
 
