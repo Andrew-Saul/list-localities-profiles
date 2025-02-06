@@ -27,7 +27,7 @@ library(broom)
 library(phsstyles)
 
 # Source in global functions/themes script
-#source("./Master RMarkdown Document & Render Code/Global Script.R")
+# source("./Master RMarkdown Document & Render Code/Global Script.R")
 
 ## File path
 filepath <- here("Demographics/")
@@ -108,74 +108,87 @@ pops <- pops %>%
 
 
 ## Gender
-gender_breakdown <- 
-  map(locality_list, 
-      ~pops %>% 
-        filter(hscp_locality == .x, year == max(year)) %>% 
-        mutate(hscp_locality = .x)
-      ) %>%
-  bind_rows() %>% 
+gender_breakdown <-
+  map(
+    locality_list,
+    ~ pops %>%
+      filter(hscp_locality == .x, year == max(year)) %>%
+      mutate(hscp_locality = .x)
+  ) %>%
+  bind_rows() %>%
   select(hscp_locality, sex, total_pop) %>%
-  group_by(hscp_locality) %>% 
+  group_by(hscp_locality) %>%
   mutate(
     total = sum(total_pop),
     perc = paste0(round_half_up(100 * total_pop / total, 1), "%")
   )
 
 ## Age & Gender
-pop_breakdown <- 
-  map(locality_list, 
-      ~ pops %>% 
-        filter(hscp_locality == .x, year == max(year)) %>% 
-        select(-c(year, total_pop, hscp2019name, Pop65Plus)) %>%
-        pivot_longer(Pop0_4:Pop85Plus, names_to = "Age", values_to = "Population") %>% 
-        mutate(Age = str_replace_all(Age, "_", "-"),
-               Age = str_replace_all(Age, "Plus", "+"),
-               Age = str_replace_all(Age, "Pop", "")) %>%
-        dplyr::rename(Gender = sex) %>%
-        mutate(Gender = case_when(
-          Gender == "M" ~ "Male",
-          Gender == "F" ~ "Female")
-        )
-  )  %>% set_names(locality_list)
+pop_breakdown <-
+  map(
+    locality_list,
+    ~ pops %>%
+      filter(hscp_locality == .x, year == max(year)) %>%
+      select(-c(year, total_pop, hscp2019name, Pop65Plus)) %>%
+      pivot_longer(Pop0_4:Pop85Plus, names_to = "Age", values_to = "Population") %>%
+      mutate(
+        Age = str_replace_all(Age, "_", "-"),
+        Age = str_replace_all(Age, "Plus", "+"),
+        Age = str_replace_all(Age, "Pop", "")
+      ) %>%
+      dplyr::rename(Gender = sex) %>%
+      mutate(Gender = case_when(
+        Gender == "M" ~ "Male",
+        Gender == "F" ~ "Female"
+      ))
+  ) %>% set_names(locality_list)
 
-pop_pyramid <- 
-  map(locality_list, 
-      ~ggplot(pop_breakdown[[.x]],
-              aes(y = factor(Age, levels = unique(pop_breakdown[[.x]]$Age)),
-                  fill = Gender)
-      ) + 
-        geom_col(
-          data = subset(pop_breakdown[[.x]], Gender == "Male"),
-          aes(x = Population)
-        ) +
-        geom_col(
-          data = subset(pop_breakdown[[.x]], Gender == "Female"),
-          aes(x = Population * (-1))
-        ) +
-        scale_x_continuous(
-          labels = abs,
-          limits = max(pop_breakdown[[.x]]$Population) * c(-1, 1)
-        ) +
-        scale_fill_manual(values = palette) +
-        theme_profiles() +
-        labs(x = "Population",
-             y = "Age Group",
-             title = paste0(str_wrap(.x, 50), " population pyramid ", pop_max_year)
-        )
+pop_pyramid <-
+  map(
+    locality_list,
+    ~ ggplot(
+      pop_breakdown[[.x]],
+      aes(
+        y = factor(Age, levels = unique(pop_breakdown[[.x]]$Age)),
+        fill = Gender
+      )
+    ) +
+      geom_col(
+        data = subset(pop_breakdown[[.x]], Gender == "Male"),
+        aes(x = Population)
+      ) +
+      geom_col(
+        data = subset(pop_breakdown[[.x]], Gender == "Female"),
+        aes(x = Population * (-1))
+      ) +
+      scale_x_continuous(
+        labels = abs,
+        limits = max(pop_breakdown[[.x]]$Population) * c(-1, 1)
+      ) +
+      scale_fill_manual(values = palette) +
+      theme_profiles() +
+      labs(
+        x = "Population",
+        y = "Age Group",
+        title = paste0(str_wrap(.x, 50), " population pyramid ", pop_max_year)
+      )
   )
 
 # Population Structure Changes
 
-hist_pop_breakdown <- 
-  pops %>% 
-  filter(hscp_locality %in% locality_list, 
-         year %in% c(max(year), max(year) - 5)) %>% 
+hist_pop_breakdown <-
+  pops %>%
+  filter(
+    hscp_locality %in% locality_list,
+    year %in% c(max(year), max(year) - 5)
+  ) %>%
   select(-c(total_pop, hscp2019name, Pop65Plus)) %>%
-  pivot_longer(Pop0_4:Pop85Plus, names_to = "Age", values_to = "Population") %>% 
-  mutate(Age = str_replace_all(Age, "_", "-"),
-         Age = str_replace_all(Age, "Plus", "+"),
-         Age = str_replace_all(Age, "Pop", "")) %>%
+  pivot_longer(Pop0_4:Pop85Plus, names_to = "Age", values_to = "Population") %>%
+  mutate(
+    Age = str_replace_all(Age, "_", "-"),
+    Age = str_replace_all(Age, "Plus", "+"),
+    Age = str_replace_all(Age, "Pop", "")
+  ) %>%
   dplyr::rename(Gender = sex) %>%
   dplyr::group_by(Gender, Age, hscp_locality) %>%
   arrange(year) %>%
@@ -185,24 +198,34 @@ hist_pop_breakdown <-
 
 ord <- c("0-4", "5-17", "18-44", "45-64", "65-74", "75-84", "85+")
 
-hist_pop_change <- 
-  map(locality_list, 
-      ~ggplot(hist_pop_breakdown %>% filter(hscp_locality == .x),  
-              aes(x = factor(Age, levels = ord), y = change, fill = Gender)) +
-        geom_col(position = position_dodge()) +
-        geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
-        scale_y_continuous(labels = scales::percent,
-                           limits = c(min(hist_pop_breakdown$change),
-                                      max(hist_pop_breakdown$change))) +
-        scale_fill_manual(values = palette) +
-        theme_profiles() +
-        theme(plot.title = element_text(size = 12)) +
-        labs(x = "Age Group", 
-             y = "Percent Change",
-             title = paste("Percent Change in Population from", pop_max_year - 5,
-      "to", pop_max_year, "\nby Age and Sex in", .x)#,
-      #caption = "Source: National Records Scotland"
+hist_pop_change <-
+  map(
+    locality_list,
+    ~ ggplot(
+      hist_pop_breakdown %>% filter(hscp_locality == .x),
+      aes(x = factor(Age, levels = ord), y = change, fill = Gender)
+    ) +
+      geom_col(position = position_dodge()) +
+      geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+      scale_y_continuous(
+        labels = scales::percent,
+        limits = c(
+          min(hist_pop_breakdown$change),
+          max(hist_pop_breakdown$change)
         )
+      ) +
+      scale_fill_manual(values = palette) +
+      theme_profiles() +
+      theme(plot.title = element_text(size = 12)) +
+      labs(
+        x = "Age Group",
+        y = "Percent Change",
+        title = paste(
+          "Percent Change in Population from", pop_max_year - 5,
+          "to", pop_max_year, "\nby Age and Sex in", .x
+        ) # ,
+        # caption = "Source: National Records Scotland"
+      )
   )
 
 
@@ -211,14 +234,13 @@ hist_pop_change <-
 ## 4a) Data wrangling ----
 
 ## Trend up to present year
-locality_pop_trend <- 
+locality_pop_trend <-
   map(locality_list, ~
-        pops %>%
-        filter(hscp_locality == .x) %>%
-        group_by(year, hscp_locality) %>%
-        dplyr::summarise(pop = sum(total_pop)) %>%
-        ungroup()
-  ) %>% set_names(locality_list)
+    pops %>%
+      filter(hscp_locality == .x) %>%
+      group_by(year, hscp_locality) %>%
+      dplyr::summarise(pop = sum(total_pop)) %>%
+      ungroup()) %>% set_names(locality_list)
 
 ## Population projections by locality
 
@@ -273,13 +295,14 @@ locality_pop_proj <- hscp_pop_proj_weight %>%
   select(-value, -pop_change)
 
 
-pop_proj_dat <- 
-  map(locality_list,
-      ~locality_pop_proj %>%
-        filter(hscp_locality == .x) %>%
-        group_by(hscp_locality, year) %>%
-        dplyr::summarise(pop = sum(pop)) %>%
-        ungroup()
+pop_proj_dat <-
+  map(
+    locality_list,
+    ~ locality_pop_proj %>%
+      filter(hscp_locality == .x) %>%
+      group_by(hscp_locality, year) %>%
+      dplyr::summarise(pop = sum(pop)) %>%
+      ungroup()
   ) %>% set_names(locality_list)
 
 
@@ -291,31 +314,35 @@ pop_proj_dat <-
 # ) %>%
 #   mutate(plot_lab = if_else(year %% 2 == 0, format(pop, big.mark = ","), ""))
 
-pop_ts_plot <- 
-  map(locality_list, 
-      ~pop_plot_dat %>% filter(hscp_locality == .x) %>% 
-        ggplot(aes(x = year, y = pop)) +
-        geom_line(aes(color = data), linewidth = 1) +
-        geom_point(color = "#0f243e") +
-        geom_text(aes(label = plot_lab),
-                  vjust = 2, color = "#4a4a4a", size = 3
-        ) +
-        scale_x_continuous(breaks = pop_plot_dat[pop_plot_dat$hscp_locality==.x, ]$year) +
-        scale_y_continuous(labels = comma, 
-                           limits = c(0, 1.1 * max(pop_plot_dat[pop_plot_dat$hscp_locality==.x, ]$pop))) +
-        scale_colour_manual(values = palette) +
-        theme_profiles() +
-        guides(color = guide_legend(title = "")) +
-        theme(
-          legend.position = "none",
-          plot.title = element_text(size = 12),
-          axis.text.x = element_text(angle = 75, vjust = 0.5, hjust = 0.5)
-        ) +
-        labs(
-          y = "Population", x = "Year",
-          title = paste0("Population Over Time in ", str_wrap(.x, 45))#,
-         # caption = "Source: National Records Scotland"
-        )
+pop_ts_plot <-
+  map(
+    locality_list,
+    ~ pop_plot_dat %>%
+      filter(hscp_locality == .x) %>%
+      ggplot(aes(x = year, y = pop)) +
+      geom_line(aes(color = data), linewidth = 1) +
+      geom_point(color = "#0f243e") +
+      geom_text(aes(label = plot_lab),
+        vjust = 2, color = "#4a4a4a", size = 3
+      ) +
+      scale_x_continuous(breaks = pop_plot_dat[pop_plot_dat$hscp_locality == .x, ]$year) +
+      scale_y_continuous(
+        labels = comma,
+        limits = c(0, 1.1 * max(pop_plot_dat[pop_plot_dat$hscp_locality == .x, ]$pop))
+      ) +
+      scale_colour_manual(values = palette) +
+      theme_profiles() +
+      guides(color = guide_legend(title = "")) +
+      theme(
+        legend.position = "none",
+        plot.title = element_text(size = 12),
+        axis.text.x = element_text(angle = 75, vjust = 0.5, hjust = 0.5)
+      ) +
+      labs(
+        y = "Population", x = "Year",
+        title = paste0("Population Over Time in ", str_wrap(.x, 45)) # ,
+        # caption = "Source: National Records Scotland"
+      )
   )
 
 ## 4c) Markdown text outputs ----
@@ -324,17 +351,17 @@ pop_ts_plot <-
 pop_graph_text <- list()
 pop_proj_text <- list()
 
-for (loc in locality_list){
-# run linear regression to approximate any linear trend in the data
+for (loc in locality_list) {
+  # run linear regression to approximate any linear trend in the data
   reg <- lm(data = locality_pop_trend[[loc]], pop ~ year) %>% summary()
-  
+
   # get text to interpret graph
   pval <- reg$coefficients[, 4][2]
   coef <- reg$coefficients[, 1][2]
-  
+
   pop_latest <- locality_pop_trend[[loc]][locality_pop_trend[[loc]]$year == max(locality_pop_trend[[loc]]$year), ]$pop
   pop_last <- locality_pop_trend[[loc]][locality_pop_trend[[loc]]$year == max(locality_pop_trend[[loc]]$year) - 1, ]$pop
-  
+
   # if there is no linear trend, this calculates the year of the last change point
   change_point <- locality_pop_trend[[loc]] %>%
     mutate(
@@ -344,25 +371,25 @@ for (loc in locality_list){
     filter(!is.na(change_point)) %>%
     summarise(last(change_point)) %>%
     as.numeric()
-  
+
   change_point <- ifelse(pop_latest == pop_last, "last year", change_point)
   change_point <- ifelse(change_point == max(pops$year) - 1, "last year", change_point)
-  
+
   pop_change <- ifelse(pop_latest > pop_last, "been rising since",
     ifelse(pop_latest == pop_last, "remained the same as",
       "been falling since"
     )
   )
-  
+
   pop_graph_text[[loc]] <- ifelse(pval < 0.05,
-  
+
     # if the pvalue is less than .05 then return:
     paste0(
       "For ", loc, ", the population has been ",
-  
+
       # determine whether its rising or falling:
       ifelse(coef < 0, "falling", "rising"),
-  
+
       # could have trend that has changed in recent years
       ifelse(coef < 0 & pop_latest > pop_last,
         " in general, however it has risen since last year.",
@@ -372,7 +399,7 @@ for (loc in locality_list){
         )
       )
     ),
-  
+
     # if the pvalue is not significant then return:
     paste0(
       paste(
@@ -381,11 +408,11 @@ for (loc in locality_list){
       ), "."
     )
   ) %>% paste()
-  
+
   ## Pop projection
   pop_proj_change <- 100 * abs(pop_proj_dat[[loc]][1, 2] - pop_proj_dat[[loc]][6, 2]) / pop_proj_dat[[loc]][1, 2]
   pop_proj_change <- round_half_up(pop_proj_change, 1) %>% as.character()
-  
+
   pop_proj_text[[loc]] <- paste(
     "The population in", loc, "is estimated to",
     ifelse(pop_proj_dat[[loc]][1, 2] < pop_proj_dat[[loc]][6, 2],
@@ -408,7 +435,7 @@ rm(
 ##################### SECTION 5: Objects for summary table #######################
 
 ## Relevant lookups for creating the table objects
-#HSCP <- as.character(filter(lookup, hscp_locality == HSCP)$hscp2019name)
+# HSCP <- as.character(filter(lookup, hscp_locality == HSCP)$hscp2019name)
 
 # Determine other localities based on LOCALITY object
 other_locs <- lookup %>%
@@ -424,25 +451,28 @@ n_loc <- lookup %>%
   pull(locality_n)
 
 ## Locality objects
-total_population <- 
-  gender_breakdown %>% 
-  select(hscp_locality, total) %>%  
-  distinct() %>% 
-  group_by(hscp_locality) %>% 
-  group_split() %>% 
+total_population <-
+  gender_breakdown %>%
+  select(hscp_locality, total) %>%
+  distinct() %>%
+  group_by(hscp_locality) %>%
+  group_split() %>%
   set_names(unique(gender_breakdown$hscp_locality)) %>%
-  map(., ~select(.x, total) %>% format_number_for_text())
+  map(., ~ select(.x, total) %>% format_number_for_text())
 
-gender_ratio <- 
-  map(locality_list,
-      ~round_half_up(filter(gender_breakdown, sex == "F", hscp_locality == .x) %>% pull(total_pop) / 
-                       filter(gender_breakdown, sex == "M", hscp_locality == .x) %>% pull(total_pop), 2)  
-) %>% 
+gender_ratio <-
+  map(
+    locality_list,
+    ~ round_half_up(filter(gender_breakdown, sex == "F", hscp_locality == .x) %>% pull(total_pop) /
+      filter(gender_breakdown, sex == "M", hscp_locality == .x) %>% pull(total_pop), 2)
+  ) %>%
   set_names(locality_list)
 
-over65 <- map(locality_list, 
-              ~round_half_up(sum(filter(pop_breakdown[[.x]], Age %in% c("65-74", "75-84", "85+"))$Population) 
-                             / gender_breakdown$total[1] * 100, 1)) %>% 
+over65 <- map(
+  locality_list,
+  ~ round_half_up(sum(filter(pop_breakdown[[.x]], Age %in% c("65-74", "75-84", "85+"))$Population)
+  / gender_breakdown$total[1] * 100, 1)
+) %>%
   set_names(locality_list)
 
 

@@ -15,7 +15,7 @@
 
 ## load packages
 library(readxl)
-library(tidyverse)#review and either load in global or only specific 
+library(tidyverse) # review and either load in global or only specific
 library(reshape2)
 library(janitor)
 library(png)
@@ -27,26 +27,26 @@ library(tidylog)
 library(phsstyles)
 
 # Determine locality (for testing only)
-#LOCALITY <- "Falkirk West"
+# LOCALITY <- "Falkirk West"
 # LOCALITY <- "Stirling City with the Eastern Villages Bridge of Allan and Dunblane"
 # LOCALITY <- "Mid-Argyll, Kintyre and Islay"
 # LOCALITY <- "City of Dunfermline"
 # LOCALITY <- "Barra"
 
 # Set year of data extracts for folder
-#ext_year <- 2023
+# ext_year <- 2023
 
 # Set file path
-#lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+# lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
 # Set Directory.
-filepath <- paste0(ip_path,"Lifestyle & Risk Factors/")
+filepath <- paste0(ip_path, "Lifestyle & Risk Factors/")
 
 # AS: automatic detection of latest Data folder
 
 ext_year_dir <- select_latest_year_dir()
-               
+
 # Source in functions code
-#source("Master RMarkdown Document & Render Code/Global Script.R")
+# source("Master RMarkdown Document & Render Code/Global Script.R")
 
 ### Geographical lookups and objects ----
 
@@ -104,7 +104,7 @@ bowel_screening <- readRDS(paste0(ext_year_dir, "/scotpho_data_extract_bowel_scr
 
 check_missing_data_scotpho(bowel_screening)
 
-###check if there is any drug death data 
+### check if there is any drug death data
 
 ############################### 2) OUTPUTS ####################################
 
@@ -139,8 +139,8 @@ drug_hosp_bar <- drug_hosp %>%
 
 drug_hosp_bar
 
-###review piping style for consistency 
-## Numbers for text 
+### review piping style for consistency
+## Numbers for text
 
 drug_hosp_latest <- filter(
   drug_hosp,
