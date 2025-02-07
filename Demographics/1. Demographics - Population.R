@@ -312,34 +312,37 @@ pop_plot_dat <- bind_rows(
   clean_names(mutate(locality_pop_trend %>% bind_rows(), data = "HISTORICAL")),
   clean_names(mutate(pop_proj_dat %>% bind_rows(), data = "PROJECTION"))
 ) %>%
-  mutate(plot_lab = if_else(year %% 2 == 0, format(pop, big.mark = ","), "")) %>% 
+  mutate(plot_lab = if_else(year %% 2 == 0, format(pop, big.mark = ","), "")) %>%
   split(.$hscp_locality)
 
-pop_ts_plot <- 
-  map(locality_list, 
-      ~pop_plot_dat[[.x]] %>% 
-        ggplot(aes(x = year, y = pop)) +
-        geom_line(aes(color = data), linewidth = 1) +
-        geom_point(color = "#0f243e") +
-        geom_text(aes(label = plot_lab),
-                  vjust = 2, color = "#4a4a4a", size = 3
-        ) +
-        scale_x_continuous(breaks = pop_plot_dat[[.x]]$year) +
-        scale_y_continuous(labels = comma, 
-                           limits = c(0, 1.1 * max(pop_plot_dat[[.x]]$pop))) +
-        scale_colour_manual(values = palette) +
-        theme_profiles() +
-        guides(color = guide_legend(title = "")) +
-        theme(
-          legend.position = "none",
-          plot.title = element_text(size = 12),
-          axis.text.x = element_text(angle = 75, vjust = 0.5, hjust = 0.5)
-        ) +
-        labs(
-          y = "Population", x = "Year",
-          title = paste0("Population Over Time in ", str_wrap(.x, 45))#,
-         # caption = "Source: National Records Scotland"
-        )
+pop_ts_plot <-
+  map(
+    locality_list,
+    ~ pop_plot_dat[[.x]] %>%
+      ggplot(aes(x = year, y = pop)) +
+      geom_line(aes(color = data), linewidth = 1) +
+      geom_point(color = "#0f243e") +
+      geom_text(aes(label = plot_lab),
+        vjust = 2, color = "#4a4a4a", size = 3
+      ) +
+      scale_x_continuous(breaks = pop_plot_dat[[.x]]$year) +
+      scale_y_continuous(
+        labels = comma,
+        limits = c(0, 1.1 * max(pop_plot_dat[[.x]]$pop))
+      ) +
+      scale_colour_manual(values = palette) +
+      theme_profiles() +
+      guides(color = guide_legend(title = "")) +
+      theme(
+        legend.position = "none",
+        plot.title = element_text(size = 12),
+        axis.text.x = element_text(angle = 75, vjust = 0.5, hjust = 0.5)
+      ) +
+      labs(
+        y = "Population", x = "Year",
+        title = paste0("Population Over Time in ", str_wrap(.x, 45)) # ,
+        # caption = "Source: National Records Scotland"
+      )
   )
 
 ## 4c) Markdown text outputs ----

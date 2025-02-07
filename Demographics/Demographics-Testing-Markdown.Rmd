@@ -22,7 +22,7 @@ options(kableExtra.auto_format = FALSE)
 # LOCALITY <- "Ayr North and Former Coalfield Communities"
 # LOCALITY <- "Helensburgh and Lomond"
 # LOCALITY <- "City of Dunfermline"
-#LOCALITY <- "Inverness"
+# LOCALITY <- "Inverness"
 
 source(here::here("Demographics", "1. Demographics - Population.R"))
 source(here::here("Demographics", "2. Demographics - SIMD.R"))
@@ -67,9 +67,9 @@ In `r pop_max_year`, the total population of `r locality_list[2]` locality was `
 #### Figure `r x`: Population by age and sex.
 
 ```{r echo = FALSE, fig.width = 7, fig.height = 8, warning = FALSE}
-(pop_pyramid[[1]]/pop_pyramid[[2]])+
-   plot_layout(guides = "collect") & 
-   theme(legend.position = "bottom")
+(pop_pyramid[[1]] / pop_pyramid[[2]]) +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
 
 
 x <- x + 1
@@ -82,12 +82,12 @@ Figure `r x` shows the historical population of `r locality_list[1]` and `r loca
 #### Figure `r x`: Population time trend and projection. \newline
 
 ```{r echo = FALSE, fig.width = 7.5, fig.height = 8, warning = FALSE}
-(pop_ts_plot[[1]]/pop_ts_plot[[2]])+
+(pop_ts_plot[[1]] / pop_ts_plot[[2]]) +
 
-   
-   plot_layout(guides = "collect") & 
-   theme(legend.position = "bottom")&
-   plot_annotation(
+
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom") &
+  plot_annotation(
     caption = "Source: National Records Scotland"
   )
 
@@ -102,11 +102,11 @@ Figure `r x` shows how population structure has changed between `r pop_min_year`
 #### Figure `r x`: Change in population structure over the last five years. \newline
 
 ```{r echo = FALSE, fig.width = 9, fig.height = 8, warning = FALSE}
-(hist_pop_change[[1]]/hist_pop_change[[2]])+
+(hist_pop_change[[1]] / hist_pop_change[[2]]) +
 
-  plot_layout(guides = "collect") & 
-   theme(legend.position = "bottom")&
-   plot_annotation(
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom") &
+  plot_annotation(
     caption = "Source: National Records Scotland"
   )
 
@@ -125,10 +125,9 @@ Of the `r pop_max_year` population in `r locality_list[1]`, **`r perc_bottom_qui
 
 
 ```{r echo = FALSE, fig.width = 10, fig.height = 8, warning = FALSE}
-
-(simd_map[[1]]+ simd_map[[2]])+
-  plot_layout(guides = "collect") & 
-   theme(legend.position = "bottom")&
+(simd_map[[1]] + simd_map[[2]]) +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom") &
   plot_annotation(
     caption = "Source: Scottish Government, Public Health Scotland"
   )
@@ -143,10 +142,12 @@ Table `r y` details the percentage of the `r locality_list[1]` 2016 population l
 
 ```{r echo = FALSE}
 knitr::kable(simd_diff_overall[[1]],
-             col.names = c("**Quintile**", "**Percent of 2016 Population (SIMD 2016 Ranking)**",
-                           "**Percent of 2021 Population (SIMD 2020 Ranking)**", "**Difference**"), 
-             align = c("l", "r", "r", "r")
-             ) 
+  col.names = c(
+    "**Quintile**", "**Percent of 2016 Population (SIMD 2016 Ranking)**",
+    "**Percent of 2021 Population (SIMD 2020 Ranking)**", "**Difference**"
+  ),
+  align = c("l", "r", "r", "r")
+)
 
 y <- y + 1
 ```
@@ -179,11 +180,10 @@ Figure `r x`  breaks down SIMD by domain in `r locality_list[1]` and `r locality
 #### Figure `r x`: Proportion of the `r locality_list[1]` and `r locality_list[2]` populations that reside in each 2020 SIMD quintile by domain in `r pop_max_year`. \newline
 
 ```{r echo = FALSE, fig.width = 8, fig.height = 10, warning = FALSE}
-
-(simd_domains[[1]]/simd_domains[[2]])+
-  plot_layout(guides = "collect") & 
-   theme(legend.position = "bottom")&
-   plot_annotation(
+(simd_domains[[1]] / simd_domains[[2]]) +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom") &
+  plot_annotation(
     caption = "Source: Scottish Government, Public Health Scotland, National Records Scotland"
   )
 
@@ -201,14 +201,14 @@ Figure `r x` presents a comparison between the 2016 SIMD ranking applied to 2016
 \newline
 
 ```{r echo = FALSE, fig.width = 10, fig.height = 14, warning = FALSE}
-(simd_diff_plot[[1]]/simd_diff_plot[[2]])+
+(simd_diff_plot[[1]] / simd_diff_plot[[2]]) +
 
-   plot_layout(guides = "collect") & 
-   theme(legend.position = "bottom")&
-   plot_annotation(
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom") &
+  plot_annotation(
     caption = "Source: Scottish Government, National Records Scotland"
   )
-  
+
 x <- x + 1
 ```
 

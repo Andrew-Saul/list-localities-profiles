@@ -12,15 +12,15 @@ library(kableExtra)
 library(dplyr)
 
 # Set year of data extracts for folder
-#ext_year <- 2023
+# ext_year <- 2023
 
 # Set file path
-#lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+# lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
 filepath <- paste0(ip_path, "Project Info & Indicators")
 
-ext_year <- list.files(filepath, "Indicator Tracker") %>% 
-  str_subset(".xlsx$") %>% 
-  str_extract("\\b\\d{4}\\b") 
+ext_year <- list.files(filepath, "Indicator Tracker") %>%
+  str_subset(".xlsx$") %>%
+  str_extract("\\b\\d{4}\\b")
 
 # testing locality
 # LOCALITY <- "Forres"
