@@ -20,18 +20,15 @@ library(janitor)
 library(readxl)
 library(reshape2)
 library(scales)
-# library(rgdal)
 library(broom)
-# library(OpenStreetMap)
-# library(ggrepel)
 library(phsstyles)
 
 # Source in global functions/themes script
+
 # source("./Master RMarkdown Document & Render Code/Global Script.R")
 
 ## File path
 filepath <- here("Demographics/")
-
 
 
 ## Final document will loop through a list of localities
@@ -39,7 +36,6 @@ filepath <- here("Demographics/")
 # LOCALITY <- "Inverness"
 # LOCALITY <- "Stirling City with the Eastern Villages Bridge of Allan and Dunblane"
 # LOCALITY <- "Ayr North and Former Coalfield Communities"
-
 
 
 ########################## SECTION 2: Data Imports ###############################
@@ -84,14 +80,14 @@ pops <- pop_raw_data %>%
 # Aggregate and add partnership + Scotland totals
 pops <- pops %>%
   group_by(year, sex, hscp2019name, hscp_locality) %>%
-  summarise_all(sum) %>%
+  summarise(across(everything(), sum)) %>%
   ungroup() %>%
   # Add a partnership total
   bind_rows(
     pops %>%
       select(-hscp_locality) %>%
       group_by(year, hscp2019name, sex) %>%
-      summarise_all(sum) %>%
+      summarise(across(everything(), sum)) %>%
       ungroup() %>%
       mutate(hscp_locality = "Partnership Total")
   ) %>%
@@ -100,7 +96,7 @@ pops <- pops %>%
     pops %>%
       select(-hscp_locality, -hscp2019name) %>%
       group_by(year, sex) %>%
-      summarise_all(sum) %>%
+      summarise(across(everything(), sum)) %>%
       ungroup() %>%
       mutate(hscp_locality = "Scotland Total", hscp2019name = "Scotland")
   )
@@ -315,6 +311,7 @@ pop_plot_dat <- bind_rows(
   mutate(plot_lab = if_else(year %% 2 == 0, format(pop, big.mark = ","), "")) %>% 
   split(.$hscp_locality)
 
+<<<<<<< HEAD
 pop_ts_plot <- 
   map(locality_list, 
       ~pop_plot_dat[[.x]] %>% 
@@ -441,11 +438,7 @@ other_locs <- lookup %>%
   arrange(hscp_locality)
 
 # Find number of locs per partnership
-n_loc <- lookup %>%
-  group_by(hscp2019name) %>%
-  summarise(locality_n = n()) %>%
-  filter(hscp2019name == HSCP) %>%
-  pull(locality_n)
+n_loc <- count_localities(lookup, HSCP)
 
 ## Locality objects
 total_population <-
@@ -484,19 +477,19 @@ other_locs_total_pop <- pops %>%
   ungroup() %>%
   mutate(total_pop = format(total_pop, big.mark = ",")) %>%
   arrange(hscp_locality) %>%
-  spread(hscp_locality, total_pop)
+  pivot_wider(names_from = hscp_locality, values_from = total_pop)
 
 # gender ratio
 other_locs_gender_ratio <- pops %>%
   filter(year == max(year)) %>%
   inner_join(other_locs, by = "hscp_locality") %>%
   select(hscp_locality, sex, total_pop) %>%
-  spread(sex, total_pop) %>%
+  pivot_wider(names_from = sex, values_from = total_pop) %>%
   mutate(ratio = round_half_up(`F` / `M`, 2)) %>%
   mutate(ratio = paste0("1:", ratio)) %>%
   arrange(hscp_locality) %>%
   select(hscp_locality, ratio) %>%
-  spread(hscp_locality, ratio)
+  pivot_wider(names_from = hscp_locality, values_from = ratio)
 
 # over 65 %
 other_locs_over65 <- pops %>%
@@ -507,7 +500,7 @@ other_locs_over65 <- pops %>%
   mutate(over65_percent = round_half_up(over65 / total_pop * 100, 1)) %>%
   arrange(hscp_locality) %>%
   select(hscp_locality, over65_percent) %>%
-  spread(hscp_locality, over65_percent)
+  pivot_wider(names_from = hscp_locality, values_from = over65_percent)
 
 
 ## HSCP objects
@@ -536,11 +529,3 @@ scot_over65 <- pop_scot %>%
   pull(perc_over65)
 
 rm(pop_hscp, pop_scot)
-
-
-
-# detach(package:tidyverse, unload=TRUE)
-# detach(package:ggrepel, unload=TRUE)
-# detach(package:reshape2, unload=TRUE)
-# detach(package:rgdal, unload=TRUE)
-# detach(package:janitor, unload=TRUE)
