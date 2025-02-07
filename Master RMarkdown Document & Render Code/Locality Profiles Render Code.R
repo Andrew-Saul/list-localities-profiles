@@ -21,20 +21,26 @@ op_path <- "/conf/LIST_analytics/West Dunbartonshire/Locality Profiles Combined/
 Sys.umask("006")
 
 # Source in functions code
-source(here("Master RMarkdown Document & Render Code/Global Script.R"))
+source(here("Master RMarkdown Document & Render Code", "Global Script.R"))
 
-<<<<<<< HEAD
+
 ## Specify HSCP here
 ## NOTE - make sure that the formatting of the partnership's name matches the lookup
 HSCP <- "West Dunbartonshire"
-=======
 # Set file path
-lp_path <- lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+lp_path <- lp_path <- "/conf/LIST_analytics/West Dunbartonshire/Locality Profiles Combined/"
 output_dir <- path(lp_path, "Master RMarkdown Document & Render Code", "Output")
->>>>>>> origin/development
+
+
+
+lookup <- read_in_localities()
 
 # Below creates locality list of all the localities in a chosen HSCP
-lookup <- read_in_localities()
+locality_list <-
+  read_in_localities(dz_level = TRUE) %>%
+  filter(hscp2019name == HSCP) %>% 
+  distinct(hscp_locality) %>% 
+  pull()
 
 # Specify HSCP(s) ----
 # use `unique(lookup$hscp2019name)` for all
@@ -42,84 +48,35 @@ lookup <- read_in_localities()
 # For a larger test, use the below to produce profiles for HSCPs likely to cause issues.
 # source("Master RMarkdown Document & Render Code/find_hscp_outliers.R")
 # hscp_list <- outlier_hscps
-hscp_list <- "Angus"
+#hscp_list <- "West Dunbartonshire"
 
 # NOTE - This checks that it exactly matches the lookup
-stopifnot(all(hscp_list %in% unique(lookup[["hscp2019name"]])))
+stopifnot(all(HSCP %in% unique(lookup[["hscp2019name"]])))
 
 # Loop over HSCP ----
 # 'looping' over one HSCP is fine.
-for (HSCP in hscp_list) {
-  # Create list of localities in chosen HSCP
-  locality_list <- lookup |>
-    filter(hscp2019name == HSCP) |>
-    pull(hscp_locality)
+# for (HSCP in hscp_list) {
+#   # Create list of localities in chosen HSCP
+#   locality_list <- lookup |>
+#     filter(hscp2019name == HSCP) |>
+#     pull(hscp_locality)
+# 
+#   # Loop to create the profiles for all the localities in the list
+# 
+#   # There are several stages to the profiles:
+#   # 1. Looping through each locality in the HSCP doing the following:
+#   # 1a. Run each section script for that locality
+#   # 1b. Run the Rmd for the main body of the profiles
+#   # 1c. Run the Rmd for the summary tables
+# 
+   #loop_env <- c(ls(), "loop_env")
 
-  # Loop to create the profiles for all the localities in the list
-
-  # There are several stages to the profiles:
-  # 1. Looping through each locality in the HSCP doing the following:
-  # 1a. Run each section script for that locality
-  # 1b. Run the Rmd for the main body of the profiles
-  # 1c. Run the Rmd for the summary tables
-
-  loop_env <- c(ls(), "loop_env")
-
-<<<<<<< HEAD
 map <- paste0(ip_path, "Master RMarkdown Document & Render Code/Output/maps/", HSCP, ".png")
-=======
-  # 1. Loop through each locality to create the main body of the profiles and the summary table
-  for (LOCALITY in locality_list) {
-    # 1a) Source in all the scripts for a given LOCALITY
->>>>>>> origin/development
 
     # Demographics ----
-    source("Demographics/1. Demographics - Population.R")
-    source("Demographics/2. Demographics - SIMD.R")
+    source(here("Demographics", "1. Demographics - Population.R"))
+    source(here("Demographics", "/2. Demographics - SIMD.R"))
 
-<<<<<<< HEAD
-# 2. Loop through each locality to create the main body of the profiles and the summary table
-#for (LOCALITY in locality_list) {
-  ## 2a) Source in all the scripts for a given LOCALITY
-
-  # demographics
-  source(here("Demographics/1. Demographics - Population.R"))
-  source(here("Demographics/2. Demographics - SIMD.R"))
-
-  # housing
-  source(here("Households/Households Code.R"))
-
-  # services
-  source(here("Services/2. Services data manipulation & table.R"))
-
-  # general health
-  source(here("General Health/3. General Health Outputs.R"))
-
-  # lifestyle & risk factors
-  source(here("Lifestyle & Risk Factors/2. Lifestyle & Risk Factors Outputs.R"))
-  # unscheduled care
-  source(here("Unscheduled Care/2. Unscheduled Care outputs.R"))
-
-  # appendices
-  source(here("Master RMarkdown Document & Render Code/Tables for Appendix.R"))
-
-  # Remove tidylog package which messes up outputs
-  detach(package:tidylog, unload = TRUE)
-
-  ## 2b) Create the main body of the profiles
-
-  rmarkdown::render(paste0(op_path, "Master RMarkdown Document & Render Code/Locality_Profiles_Master_Markdown.Rmd"),
-    output_file = paste0(LOCALITY, " - Locality Profile.docx"),
-    output_dir = paste0(op_path, "Master RMarkdown Document & Render Code/Output/")
-  )
-
-  ## 2c) Create the summary tables
-  rmarkdown::render(paste0(op_path, "Summary Table/Summary-Table-Markdown.Rmd"),
-    output_file = paste0(LOCALITY, " - Summary Table.docx"),
-    output_dir = paste0(op_path, "Master RMarkdown Document & Render Code/Output/Summary Tables/")
-  )
-
-=======
     # Housing ----
     source("Households/Households Code.R")
 
@@ -158,6 +115,5 @@ map <- paste0(ip_path, "Master RMarkdown Document & Render Code/Output/maps/", H
     rm(list = setdiff(ls(), loop_env))
     # Force garbage collection to free up memory
     gc()
-  }
-}
->>>>>>> origin/development
+
+

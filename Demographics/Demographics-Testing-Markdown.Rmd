@@ -35,11 +35,6 @@ y <- 1 # object for table numbers
 
 **For the most recent time periods available, `r locality_list[1]` Locality had:**
 
--   A total population of **`r total_population`** people, where **`r gender_breakdown[gender_breakdown$sex == "M",]$perc`** were male, and **`r over65`%** were aged over 65.
--   **`r perc_top_quintile`%** of people lived in the least deprived SIMD quintile, and **`r perc_bottom_quintile`%** lived in the most deprived quintile.
-
-\newline
-
 A total population of **`r total_population[[1]]`** people, where **`r gender_breakdown %>% filter(sex == "M", hscp_locality == locality_list[1]) %>% pull(perc)`** were male, and **`r over65[1]`%** were aged over 65.
 **`r perc_top_quintile[[1]]`%** of people lived in the least deprived SIMD quintile, and **`r perc_bottom_quintile[[1]]`%** lived in the most deprived quintile.
 
@@ -98,9 +93,6 @@ Figure `r x` shows how the population structure has changed between `r pop_min_y
 
 #### Figure `r x`: Change in population structure over the last five years.
 
-<<<<<<< HEAD
-#### Figure `r x`: Change in population structure over the last five years. \newline
-
 ```{r echo = FALSE, fig.width = 9, fig.height = 8, warning = FALSE, fig.cap= "Bar charts showing the percentage change in population structure, split by age and sex, over the last five years"}
 (hist_pop_change[[1]]/hist_pop_change[[2]])+
 
@@ -155,9 +147,10 @@ Table `r y` details the percentage of the `r locality_list[2]` 2016 population l
 
 
 \newline
-#### Table `r y`: Percentage `r locality_list[2]` population living in the 2016 and 2020 SIMD Datazone Quintiles in 2016 and `r pop_max_year` respectively. \newline
 
-#### Table `r y`: Percentage `r locality_list[2]` population living in the 2016 and 2020 SIMD Datazone Quintiles in 2016 and `r pop_max_year` respectively. \newline
+#### Table `r y`: Percentage `r locality_list[2]` population living in the 2016 and 2020 SIMD Datazone Quintiles in 2016 and `r pop_max_year` respectively. 
+
+\newline
 
 ```{r echo = FALSE}
 knitr::kable(simd_diff_overall[[2]],
