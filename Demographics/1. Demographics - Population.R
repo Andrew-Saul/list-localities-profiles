@@ -315,7 +315,6 @@ pop_plot_dat <- bind_rows(
   mutate(plot_lab = if_else(year %% 2 == 0, format(pop, big.mark = ","), "")) %>% 
   split(.$hscp_locality)
 
-<<<<<<< HEAD
 pop_ts_plot <- 
   map(locality_list, 
       ~pop_plot_dat[[.x]] %>% 
@@ -341,37 +340,6 @@ pop_ts_plot <-
           title = paste0("Population Over Time in ", str_wrap(.x, 45))#,
          # caption = "Source: National Records Scotland"
         )
-=======
-pop_ts_plot <-
-  map(
-    locality_list,
-    ~ pop_plot_dat %>%
-      filter(hscp_locality == .x) %>%
-      ggplot(aes(x = year, y = pop)) +
-      geom_line(aes(color = data), linewidth = 1) +
-      geom_point(color = "#0f243e") +
-      geom_text(aes(label = plot_lab),
-        vjust = 2, color = "#4a4a4a", size = 3
-      ) +
-      scale_x_continuous(breaks = pop_plot_dat[pop_plot_dat$hscp_locality == .x, ]$year) +
-      scale_y_continuous(
-        labels = comma,
-        limits = c(0, 1.1 * max(pop_plot_dat[pop_plot_dat$hscp_locality == .x, ]$pop))
-      ) +
-      scale_colour_manual(values = palette) +
-      theme_profiles() +
-      guides(color = guide_legend(title = "")) +
-      theme(
-        legend.position = "none",
-        plot.title = element_text(size = 12),
-        axis.text.x = element_text(angle = 75, vjust = 0.5, hjust = 0.5)
-      ) +
-      labs(
-        y = "Population", x = "Year",
-        title = paste0("Population Over Time in ", str_wrap(.x, 45)) # ,
-        # caption = "Source: National Records Scotland"
-      )
->>>>>>> 609f2f5b181b2e97d44afce35da8047a4763e3fa
   )
 
 ## 4c) Markdown text outputs ----
