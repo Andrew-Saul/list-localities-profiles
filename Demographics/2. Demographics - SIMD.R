@@ -21,7 +21,6 @@ library(janitor)
 library(reshape2)
 library(ggrepel)
 library(phsstyles)
-<<<<<<< HEAD
 library(leaflet)
 library(htmlwidgets)
 library(leaflet.extras)
@@ -33,12 +32,6 @@ library(sf)
 
 ## File path
 filepath <- paste0(ip_path, "Demographics/")
-=======
-library(sf)
-
-# Source in global functions/themes script
-# source("Master RMarkdown Document & Render Code/Global Script.R")
->>>>>>> origin/development
 
 ## Final document will loop through a list of localities
 # Create placeholder for for loop
@@ -125,7 +118,7 @@ rm(simd_perc_breakdown)
 ## 5b) SIMD map ----
 
 # load in shapefile for mapping
-<<<<<<< HEAD
+
 #zones<- sf::read_sf("//conf/linkage/output/lookups/Unicode/Geography/Shapefiles/Data Zones 2011/SG_DataZone_Bdry_2011.shp")
 
 #zones <- sf::st_transform(zones,4326)
@@ -211,11 +204,7 @@ rm(simd_perc_breakdown)
 
 # load in shapefile for mapping
 zones_all<-read_sf(dsn = "//conf/linkage/output/lookups/Unicode/Geography/Shapefiles/Data Zones 2011/SG_DataZone_Bdry_2011.shp") %>% st_transform(4326) %>% rename(datazone2011 = datazone20)
-=======
-zones <- read_sf(dsn = "//conf/linkage/output/lookups/Unicode/Geography/Shapefiles/Data Zones 2011/SG_DataZone_Bdry_2011.shp") %>%
-  st_transform(4326) %>%
-  rename(datazone2011 = datazone20)
->>>>>>> origin/development
+
 
 # merge lookup and shapefile
 zones_merged <- merge(zones_all, lookup_dz, by = "datazone2011")
@@ -250,15 +239,7 @@ min_lat <- zones_coord$min_lat
 max_lat <- zones_coord$max_lat
 
 # get place names
-<<<<<<< HEAD
 places <- place_names %>%
-=======
-places <- read_csv(paste0(
-  "/conf/linkage/output/lookups/Unicode/Geography/",
-  "Shapefiles/Scottish Places/Places to Data",
-  " Zone Lookup.csv"
-)) %>%
->>>>>>> origin/development
   rename(datazone2011 = DataZone) %>%
   filter(datazone2011 %in% zones$datazone2011) %>%
   # extra filter to remove place names with coordinates outwith locality
@@ -287,17 +268,10 @@ simd_col <- RColorBrewer::brewer.pal(n = 5, name = "RdYlBu")
 simd_cats <- paste("SIMD", 1:5)
 
 # plot
-<<<<<<< HEAD
-simd_map[[loc]] <- ggplot() +
+simd_map[[loc]] <- 
+  ggplot() +
   geom_sf(data = zones,
           aes(fill = factor(simd, levels = 1:5)), colour = "black") +
-=======
-simd_map <- ggplot() +
-  geom_sf(
-    data = zones,
-    aes(fill = ordered(simd, levels = 1:5)), colour = "black"
-  ) +
->>>>>>> origin/development
   scale_fill_manual(values = simd_col, labels = simd_cats, drop = FALSE) +
   geom_label_repel(
     data = places,
@@ -308,8 +282,7 @@ simd_map <- ggplot() +
     label.size = NA # Labels don't have a border
   ) +
   theme_void() +
-<<<<<<< HEAD
-  guides(fill=guide_legend(title="SIMD Quintile")) +
+  guides(fill = guide_legend(title="SIMD Quintile")) +
   labs(subtitle = loc#,
       # caption = "Source: Scottish Government, Public Health Scotland"
       )+
@@ -318,12 +291,6 @@ simd_map <- ggplot() +
 }
 
 rm(zones_all, zones_merged, zones, places, place_names, simd_map_data)
-=======
-  guides(fill = guide_legend(title = "SIMD Quintile")) +
-  labs(caption = "Source: Scottish Government, Public Health Scotland")
-
-rm(zones, places, simd_map_data)
->>>>>>> origin/development
 
 ## 5c) SIMD domains ----
 
@@ -504,8 +471,8 @@ simd_diff_overall[[loc]] <- simd_16_20_dom[[loc]] %>%
 
 ##################### SECTION 4: Objects for summary table #######################
 
-## Relevant lookups for creating the table objects
-lookup <- read_in_localities()
+## Relevant lookups for creating the table objects - object in locality profiles render code.R
+#lookup <- read_in_localities()
 
 ## Relevant lookups for creating the table objects
 #HSCP <- as.character(filter(lookup, hscp_locality == LOCALITY)$hscp2019name)
@@ -558,3 +525,4 @@ hscp_simd <- pop_data %>%
 
 hscp_simd_top <- filter(hscp_simd, simd2020v2_sc_quintile == 5)$perc
 hscp_simd_bottom <- filter(hscp_simd, simd2020v2_sc_quintile == 1)$perc
+

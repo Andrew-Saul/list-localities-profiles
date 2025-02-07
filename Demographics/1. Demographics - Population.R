@@ -312,7 +312,7 @@ pop_plot_dat <- bind_rows(
   mutate(plot_lab = if_else(year %% 2 == 0, format(pop, big.mark = ","), "")) %>% 
   split(.$hscp_locality)
 
-<<<<<<< HEAD
+
 pop_ts_plot <- 
   map(locality_list, 
       ~pop_plot_dat[[.x]] %>% 
