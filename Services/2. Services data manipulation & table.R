@@ -26,17 +26,18 @@ library(grid)
 library(data.table)
 
 # Change year to be the year in the data folder name
-#ext_year <- 2023
+
+#ext_year <- 2024
 
 ## Set Locality (for testing only)
 # LOCALITY <- "Falkirk West"
 
 ## Set file path
-#lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+
 filepath <- paste0(ip_path, "/Services")
 
 # Source in functions code
-#source("Master RMarkdown Document & Render Code/Global Script.R")
+# source("Master RMarkdown Document & Render Code/Global Script.R")
 
 # Determine latest subdirectory containing data - Services
 ext_year_dir <- select_latest_year_dir()
@@ -49,15 +50,11 @@ lookup <- read_in_localities(dz_level = TRUE)
 # Lookup without datazones
 lookup2 <- read_in_localities()
 
-## Determine HSCP
-HSCP <- as.character(filter(lookup2, hscp_locality == LOCALITY)$hscp2019name)
+## Determine HSCP - alread stated in localities_render_code.R
+#HSCP <- as.character(filter(lookup2, hscp_locality == LOCALITY)$hscp2019name)
 
 # Get number of localities in HSCP
-n_loc <- lookup2 %>%
-  group_by(hscp2019name) %>%
-  summarise(locality_n = n()) %>%
-  filter(hscp2019name == HSCP) %>%
-  pull(locality_n)
+n_loc <- count_localities(lookup2, HSCP)
 
 
 ###### 2. Read in services data ######
@@ -95,26 +92,14 @@ for (file in services_file_names) {
 }
 
 # Change to more straightforward names
-access_dep <- scot
 hosp_postcodes <- curr
 hosp_types <- hosp
 care_homes <- MDSF
 
-rm(curr, hosp, MDSF, scot)
+rm(curr, hosp, MDSF)
 
 
 ###### 3. Manipulate services data ######
-
-## Access deprivtion ----
-access_dep <- clean_scotpho_dat(access_dep)
-
-latest_year_access_dep <- max(access_dep$year)
-
-access_dep_latest <- filter(
-  access_dep,
-  year == max(access_dep$year) &
-    (area_name == LOCALITY & area_type == "Locality")
-)$measure
 
 ## GP Practices ----
 
@@ -152,22 +137,22 @@ markers_emergency_dep <- hosp_lookup %>%
   filter(type == "Emergency Department") %>%
   filter(hscp2019name == HSCP)
 
-Clacks_Royal <- hosp_lookup %>%
-  filter(name == "Forth Valley Royal Hospital")
-
-# Ninewells hospital is incorrectly mapped even though postcode ok - so corrected coords here
-
-if (HSCP == "Dundee City") {
-  markers_emergency_dep <- markers_emergency_dep %>%
-    mutate(
-      latitude = if_else(latitude == 56.4617, 56.4659308, latitude),
-      longitude = if_else(longitude == -2.991432, -3.0378506, longitude)
-    )
-}
-
-if (HSCP == "Clackmannanshire & Stirling") {
-  markers_emergency_dep <- rbind(markers_emergency_dep, Clacks_Royal)
-}
+# Clacks_Royal <- hosp_lookup %>%
+#   filter(name == "Forth Valley Royal Hospital")
+# 
+# # Ninewells hospital is incorrectly mapped even though postcode ok - so corrected coords here
+# 
+# if (HSCP == "Dundee City") {
+#   markers_emergency_dep <- markers_emergency_dep %>%
+#     mutate(
+#       latitude = if_else(latitude == 56.4617, 56.4659308, latitude),
+#       longitude = if_else(longitude == -2.991432, -3.0378506, longitude)
+#     )
+# }
+# 
+# if (HSCP == "Clackmannanshire & Stirling") {
+#   markers_emergency_dep <- rbind(markers_emergency_dep, Clacks_Royal)
+# }
 
 ## Care Homes ----
 
@@ -183,29 +168,34 @@ markers_care_home <- care_homes %>%
 ###### 4. Table ######
 
 # Subset care which is not Elderly care for table
-other_care_type <- care_homes %>%
+other_care_type <- 
+  map(locality_list,
+      ~care_homes %>%
   select(type = care_service, subtype, name = service_name, service_postcode) %>%
   filter(type == "Care Home Service") %>%
   filter(subtype != "Older People") %>%
   mutate(postcode = gsub(" ", "", service_postcode)) %>%
   left_join(postcode_lkp, by = "postcode") %>%
-  filter(hscp_locality == LOCALITY)
+  filter(hscp_locality == .x)
+  ) %>% 
+  set_names(locality_list)
 
 # Create table
 services_tibble <- tibble(
-  Type = c("**Primary Care**", "**A&E**", "", "**Care Home**", ""),
-  Service = c("GP Practice", "Emergency Department", "Minor Injuries Unit", "Elderly Care", "Other"),
+  Locality = c(paste0("**",locality_list[1],"**"), rep("", 4), paste0("**",locality_list[2],"**"), rep("", 4)),
+  Type = rep(c("**Primary Care**", "**A&E**", "", "**Care Home**", ""),2),
+  Service = rep(c("GP Practice", "Emergency Department", "Minor Injuries Unit", "Elderly Care", "Other"),2),
   Number = c(
-    nrow(filter(markers_gp, hscp_locality == LOCALITY)),
-    nrow(filter(markers_emergency_dep, hscp_locality == LOCALITY)),
-    nrow(filter(markers_miu, hscp_locality == LOCALITY)),
-    nrow(filter(markers_care_home, hscp_locality == LOCALITY)),
-    nrow(other_care_type)
+    nrow(filter(markers_gp, hscp_locality == locality_list[1])),
+    nrow(filter(markers_emergency_dep, hscp_locality == locality_list[1])),
+    nrow(filter(markers_miu, hscp_locality == locality_list[1])),
+    nrow(filter(markers_care_home, hscp_locality == locality_list[1])),
+    nrow(other_care_type[[locality_list[1]]]),
+    nrow(filter(markers_gp, hscp_locality == locality_list[2])),
+    nrow(filter(markers_emergency_dep, hscp_locality == locality_list[2])),
+    nrow(filter(markers_miu, hscp_locality == locality_list[2])),
+    nrow(filter(markers_care_home, hscp_locality == locality_list[2])),
+    nrow(other_care_type[[locality_list[2]]])
   )
 )
 
-
-# detach(package:tidyverse, unload=TRUE)
-# detach(package:janitor, unload=TRUE)
-# detach(package:mapview, unload=TRUE)
-# detach(package:data.table, unload=TRUE)
